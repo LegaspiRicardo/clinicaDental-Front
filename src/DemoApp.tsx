@@ -11,6 +11,8 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { INITIAL_EVENTS, createEventId } from './event-utils'
+import esLocale from '@fullcalendar/core/locales/es';
+
 
 interface DemoAppState {
   weekendsVisible: boolean
@@ -30,11 +32,12 @@ export default class DemoApp extends React.Component<{}, DemoAppState> {
         {this.renderSidebar()}
         <div className='demo-app-main'>
           <FullCalendar
+            locale={esLocale}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
-              left: 'title,prev,next,today',
+              left: 'title,prev,next',
               center: '',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay,today',
             }}
             initialView='dayGridMonth'
             editable={true}
@@ -64,9 +67,9 @@ export default class DemoApp extends React.Component<{}, DemoAppState> {
         <div className='demo-app-sidebar-section'>
           <h2>DENTAL - ART</h2>
           <ul>
-            <li>Dentistas</li>
-            <li>Pacientes</li>
-            <li>Horarios</li>
+            <a href="" className='linkSideBar'> <li> Dentista</li></a>
+            <a href="" className='linkSideBar' > <li>  Pacientes</li></a>
+            <a href="" className='linkSideBar'> <li>  Horarios</li></a>
           </ul>
         </div>
 
@@ -74,6 +77,7 @@ export default class DemoApp extends React.Component<{}, DemoAppState> {
           <h2>Proximas citas ({this.state.currentEvents.length})</h2>
           <ul>
             {this.state.currentEvents.map(renderSidebarEvent)}
+            
           </ul>
         </div>
 

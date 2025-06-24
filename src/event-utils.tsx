@@ -14,6 +14,7 @@ export const INITIAL_EVENTS: EventInput[] = [
     title: 'Timed event',
     start: todayStr + 'T12:00:00'
   }
+  
 ]
 
 export function createEventId() {
