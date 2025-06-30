@@ -12,7 +12,7 @@ h2 {
   margin: 0;
   font-size: 28px;
   color: rgb(19, 19, 19);
-  text-shadow: 1px 1px rgba(192, 192, 192, 0.83);
+  text-shadow: 1px 1px rgba(248, 248, 248, 0.692);
 }
 
 ul {
@@ -28,8 +28,9 @@ li {
 }
 
 li:hover{
-  background-color:rgb(202, 202, 202) ;
+  background-color:rgb(231, 231, 231) ;
   scale: 1.1;
+  border-radius: 5%;
 }
 
 .linkSideBar{
@@ -46,13 +47,14 @@ b { /* used for event dates/times */
   min-height: 100%;
   font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
   font-size: 14px;
-  background-color: rgb(73, 117, 138);
+  background-color: rgba(218, 218, 218, 0.925);
 }
 
 .demo-app-sidebar {
+  padding-top: 2%;
   width: 300px;
-  line-height: 1.5;
-  background: rgba(247, 246, 246, 0.87);
+  line-height: 1.2;
+  background: rgba(127, 186, 209, 0.692);
   border-right: 1px solid #515152;
 }
 
@@ -70,13 +72,14 @@ b { /* used for event dates/times */
   max-width: 1300px;
   margin: 0 auto;
   padding: 2% 5%;
-  background-color: rgb(231, 231, 231);
+  background-color: rgba(241, 241, 241, 0.925);
+
   border-radius: 5%;
 }
 
 
 .fc-view-harness{
-  background-color: rgba(218, 218, 218, 0.925);
+  background-color: rgba(241, 241, 241, 0.925);
   border-radius: 2%;
   
 };
@@ -84,6 +87,8 @@ b { /* used for event dates/times */
 
 .fc-day{
   background-color: black;
-  border-radius: red; 
+  
+  border: solid rgba(0, 0, 0, 0.644);
 };
+
 
