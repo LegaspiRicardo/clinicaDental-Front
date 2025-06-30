@@ -2,7 +2,7 @@
 	"npx create-next-app@latest"
 
 2. Instalar fullCalendar con Typescrit version 18
-	"https://github.com/fullcalendar/fullcalendar-examples"
+	"https://github.com/fullcalendar/fullcalendar-examples/tree/main/react18-typescript"
 	"cd fullcalendar-examples/react18-typescript"
 	"npm install"
 
