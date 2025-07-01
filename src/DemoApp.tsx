@@ -17,34 +17,48 @@ import esLocale from '@fullcalendar/core/locales/es';
 interface DemoAppState {
   weekendsVisible: boolean
   currentEvents: EventApi[]
+  isSidebarOpen: boolean
 }
 
 export default class DemoApp extends React.Component<{}, DemoAppState> {
 
   state: DemoAppState = {
     weekendsVisible: true,
-    currentEvents: []
+    currentEvents: [],
+    isSidebarOpen: false
   }
 
   render() {
+
+
     return (
       <div className='demo-app'>
+            <button
+  className="hamburger-btn"
+  onClick={() => this.setState({ isSidebarOpen: !this.state.isSidebarOpen })}
+>
+  ☰
+</button>
         {this.renderSidebar()}
+
+        <div className='main-wrapper'>
         <div className='demo-app-main'>
+
+        {this.renderFilters()}  
+
           <FullCalendar
             locale={esLocale}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
-              left: 'title,prev,next',
-              center: '',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay,today',
+              left: 'prev,next, today',
+              center: 'title',
+              right: 'dayGridMonth,timeGridWeek,timeGridDay',
             }}
             initialView='dayGridMonth'
             editable={true}
             selectable={true}
             selectMirror={true}
             dayMaxEvents={true}
-            weekends={this.state.weekendsVisible}
             initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
             select={this.handleDateSelect}
             eventContent={renderEventContent} // custom render function
@@ -57,19 +71,25 @@ export default class DemoApp extends React.Component<{}, DemoAppState> {
             */
           />
         </div>
+</div>
       </div>
     )
   }
 
+
+
+  
   renderSidebar() {
     return (
-      <div className='demo-app-sidebar'>
+    <div className={`demo-app-sidebar ${this.state.isSidebarOpen ? 'open' : ''}`}>
+
         <div className='demo-app-sidebar-section'>
           <h2>DENTAL - ART</h2>
           <ul>
-            <a href="" className='linkSideBar'> <li> Dentista</li></a>
+            <a href="" className='linkSideBar'> <li> Dentistas</li></a>
             <a href="" className='linkSideBar' > <li>  Pacientes</li></a>
             <a href="" className='linkSideBar'> <li>  Horarios</li></a>
+            <a href="" className='linkSideBar'> <li>  Finanzas</li></a>
           </ul>
         </div>
 
@@ -81,19 +101,41 @@ export default class DemoApp extends React.Component<{}, DemoAppState> {
           </ul>
         </div>
 
-        <div className='demo-app-sidebar-section'>
-          <label>
-            <input
-              type='checkbox'
-              checked={this.state.weekendsVisible}
-              onChange={this.handleWeekendsToggle}
-            ></input>
-            Ocultar fin de semana
-          </label>
-        </div>
+
       </div>
     )
   }
+
+
+renderFilters() {
+  return (
+    <div className="filters-bar" style={{ padding: '2rem 1rem', width:'80%' ,display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' , margin:'0 auto' }}>
+      <select name="dentist" className="filter-selects" >
+        <option value="" hidden className='filter-select-title'>Doctores y dentistas</option>
+        <option value="gomez">Dr. Gómez</option>
+        <option value="perez">Dra. Pérez</option>
+      </select>
+
+      <select name="servicio" className="filter-selects" >
+        <option value="" hidden>Servicios</option>
+        <option value="general">Consulta general</option>
+        <option value="ortodoncia">Ortodoncia</option>
+        <option value="limpieza">Limpieza</option>
+        <option value="extraccion">Extracción</option>
+      </select>
+
+      <input type="text" placeholder="Buscar paciente" className="filter-input" />
+
+
+
+      <button className="filter-button" style={{backgroundColor:'#1e40af', color:'white', padding:'0.4rem 1rem', borderRadius:'0.4rem', border:'none', cursor:'pointer'}}>Filtrar</button>
+    </div>
+  );
+}
+
+
+
+
 
   handleWeekendsToggle = () => {
     this.setState({
