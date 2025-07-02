@@ -50,7 +50,7 @@ export default class DemoApp extends React.Component<{}, DemoAppState> {
             locale={esLocale}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             headerToolbar={{
-              left: 'prev,next, today',
+              left: 'prev,next,today',
               center: 'title',
               right: 'dayGridMonth,timeGridWeek,timeGridDay',
             }}
@@ -109,7 +109,7 @@ export default class DemoApp extends React.Component<{}, DemoAppState> {
 
 renderFilters() {
   return (
-    <div className="filters-bar" style={{ padding: '2rem 1rem', width:'80%' ,display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' , margin:'0 auto' }}>
+    <div className="filters-bar" >
       <select name="dentist" className="filter-selects" >
         <option value="" hidden className='filter-select-title'>Doctores y dentistas</option>
         <option value="gomez">Dr. Gómez</option>
@@ -128,7 +128,7 @@ renderFilters() {
 
 
 
-      <button className="filter-button" style={{backgroundColor:'#1e40af', color:'white', padding:'0.4rem 1rem', borderRadius:'0.4rem', border:'none', cursor:'pointer'}}>Filtrar</button>
+      <button className="filter-button" style={{backgroundColor:'#2c3e50', color:'white', padding:'0.4rem 1rem', borderRadius:'0.4rem', border:'none', cursor:'pointer'}}>Filtrar</button>
     </div>
   );
 }

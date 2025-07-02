@@ -73,54 +73,6 @@ b { /* used for event dates/times */
 }
 
 
-/* 🔐 Ocultar en móviles */
-@media (max-width: 1024px) {
-
-
-.demo-app {
-    flex-direction: column; /* Opcional: pila vertical */
-    align-items: center;    /* ✅ centra .demo-app-main horizontalmente */
-  }
-
-  .demo-app-main {
-    width: 95%;
-  }
-
-  .demo-app-sidebar {
-    position: fixed;
-    height: 100%;
-    left: 0;
-    top: 0;
-    z-index: 1000;
-    transform: translateX(-100%);
-  }
-
-  .demo-app-sidebar.open {
-    transform: translateX(0%);
-  }
-
-  .hamburger-btn {
-    display: block;
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1100;
-    background: #1e40af;
-    color: white;
-    padding: 0.5rem 1rem;
-    font-size: 1.5rem;
-    border: none;
-    border-radius: 0.4rem;
-    cursor: pointer;
-  }
-}
-
-/* 🖥 Mostrar normalmente en pantallas grandes */
-@media (min-width: 1025px) {
-  .hamburger-btn {
-    display: none;
-  }
-}
 
 
 .filter-selects, .filter-input{
@@ -182,4 +134,84 @@ b { /* used for event dates/times */
 
 .fc-toolbar-title{
   text-transform: capitalize;
+}
+
+
+
+
+
+
+
+
+
+
+
+/* 🔐 Vista en móviles */
+@media (max-width: 1024px) {
+
+
+.demo-app {
+    flex-direction: column; /* Opcional: pila vertical */
+    align-items: center;    /* ✅ centra .demo-app-main horizontalmente */
+  }
+
+  .demo-app-main {
+    width: 95%;
+  }
+
+  .demo-app-sidebar {
+    position: fixed;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+  }
+
+  .demo-app-sidebar.open {
+    transform: translateX(0%);
+  }
+
+  .hamburger-btn {
+    display: block;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+    background: #2c3e50;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 1.5rem;
+    border: none;
+    border-radius: 0.4rem;
+    cursor: pointer;
+  }
+
+.filter-selects, .filter-input{
+  font-size: 14px;
+}
+
+.filters-bar{
+  padding: 0;
+}
+}
+
+/* 🖥 Mostrar normalmente en pantallas grandes */
+@media (min-width: 1025px) {
+  .hamburger-btn {
+    display: none;
+  }
+}
+
+
+
+.filters-bar{
+  padding: 2rem 1rem;
+  width: 80%;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 auto;
+
 }
