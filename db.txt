@@ -1,0 +1,186 @@
+CREACION DE LAS TABLAS
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  email VARCHAR(100) UNIQUE,
+  password VARCHAR(255),
+  especialidad VARCHAR(100),
+  status ENUM('Activo', 'No activo'),
+  rol ENUM('Admin', 'Dentista', 'Paciente') NOT NULL
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+);
+
+CREATE TABLE servicio(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  description TEXT,
+  precio DECIMAL(7,2),
+  duracion_estimada INT
+);
+
+CREATE TABLE horario(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  id_dentista INT NOT NULL,
+  fecha DATE NOT NULL,
+  inicio TIME NOT NULL,
+  fin TIME NOT NULL,
+  FOREIGN KEY (id_dentista) REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE cita (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  fecha DATE NOT NULL,
+  inicio TIME NOT NULL,
+  fin TIME NOT NULL,
+  status ENUM('Pendiente', 'Confirmada', 'Cancelada', 'Completada') DEFAULT 'Pendiente',
+  description TEXT,
+
+  id_dentista INT NOT NULL,
+  id_paciente INT NOT NULL,
+  id_servicio INT NOT NULL,
+  id_horario INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (id_dentista) REFERENCES users(id),
+  FOREIGN KEY (id_paciente) REFERENCES users(id),
+  FOREIGN KEY (id_servicio) REFERENCES servicio(id),
+  FOREIGN KEY (id_horario) REFERENCES horario(id)
+);
+
+
+CREATE TABLE pago(
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  titulo VARCHAR(100),
+  tipo_pago ENUM('Efectivo', 'Transferencia', 'Deposito') DEFAULT 'Efectivo',
+  monto DECIMAL(7,2),
+  id_cita INT NOT NULL,
+ 
+  FOREIGN KEY (id_cita) REFERENCES cita(id)
+);
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+INSERTS EJEMPLO 
+
+INSERT INTO users (name, email, password, especialidad, status, rol, created_at) VALUES
+('Ana Gómez', 'ana.gomez@example.com', 'pass123', 'Ortodoncia', 'Activo', 'Dentista', '2025-07-15 08:00:00'),
+('Luis Pérez', 'luis.perez@example.com', 'pass123', 'Endodoncia', 'Activo', 'Dentista', '2025-07-15 09:30:00'),
+('María Ruiz', 'maria.ruiz@example.com', 'pass123', 'Cirugía dental', 'No activo', 'Dentista', '2025-07-15 10:15:00'),
+('Carlos Torres', 'carlos.torres@example.com', 'pass123', 'Odontopediatría', 'Activo', 'Dentista', '2025-07-15 11:45:00'),
+('Laura Jiménez', 'laura.jimenez@example.com', 'pass123', 'Implantología', 'Activo', 'Dentista', '2025-07-15 13:00:00'),
+('Admin General', 'admin@example.com', 'adminpass', NULL, 'Activo', 'Admin', '2025-07-15 14:20:00'),
+('Pedro Ramos', 'pedro.ramos@example.com', 'pass123', NULL, 'Activo', 'Paciente', '2025-07-15 15:30:00'),
+('Elena Salas', 'elena.salas@example.com', 'pass123', NULL, 'Activo', 'Paciente', '2025-07-15 16:10:00'),
+('Jorge Molina', 'jorge.molina@example.com', 'pass123', NULL, 'No activo', 'Paciente', '2025-07-15 16:45:00'),
+('Lucía Navarro', 'lucia.navarro@example.com', 'pass123', NULL, 'Activo', 'Paciente', '2025-07-15 17:30:00');
+
+
+
+INSERT INTO servicio (name, description, precio, duracion_estimada) VALUES
+('Limpieza dental', 'Limpieza profesional de dientes', 500.00, 30),
+('Extracción', 'Extracción de pieza dental', 1000.00, 45),
+('Blanqueamiento', 'Tratamiento para blanqueamiento dental', 1500.00, 60),
+('Ortodoncia', 'Colocación de brackets', 5000.00, 120),
+('Implante dental', 'Implante quirúrgico de pieza', 8000.00, 90),
+('Endodoncia', 'Tratamiento de conducto', 2500.00, 75),
+('Consulta general', 'Revisión general de la salud bucal', 300.00, 20),
+('Resina', 'Colocación de resina dental', 700.00, 30),
+('Radiografía', 'Radiografía dental panorámica', 400.00, 15),
+('Coronas', 'Colocación de corona dental', 3000.00, 60);
+
+
+INSERT INTO horario (id_dentista, fecha, inicio, fin) VALUES
+(1, '2025-07-16', '09:00:00', '13:00:00'),
+(1, '2025-07-17', '14:00:00', '18:00:00'),
+(2, '2025-07-16', '08:00:00', '12:00:00'),
+(3, '2025-07-16', '10:00:00', '14:00:00'),
+(4, '2025-07-17', '09:00:00', '13:00:00'),
+(5, '2025-07-18', '11:00:00', '15:00:00'),
+(2, '2025-07-18', '14:00:00', '18:00:00'),
+(3, '2025-07-19', '09:00:00', '12:00:00'),
+(4, '2025-07-19', '13:00:00', '17:00:00'),
+(5, '2025-07-20', '08:00:00', '12:00:00');
+
+
+INSERT INTO cita (fecha, inicio, fin, status, description, id_dentista, id_paciente, id_servicio, id_horario) VALUES
+('2025-07-16', '09:30:00', '10:00:00', 'Confirmada', 'Limpieza dental inicial', 1, 7, 1, 1),
+('2025-07-16', '10:30:00', '11:15:00', 'Pendiente', 'Extracción de muela', 2, 8, 2, 3),
+('2025-07-17', '14:30:00', '15:30:00', 'Completada', 'Blanqueamiento dental', 1, 9, 3, 2),
+('2025-07-17', '09:30:00', '10:30:00', 'Pendiente', 'Consulta para ortodoncia', 4, 10, 4, 5),
+('2025-07-18', '11:30:00', '13:00:00', 'Confirmada', 'Implante dental posterior', 5, 7, 5, 6),
+('2025-07-18', '15:00:00', '16:15:00', 'Pendiente', 'Endodoncia molar', 2, 8, 6, 7),
+('2025-07-19', '09:30:00', '10:00:00', 'Cancelada', 'Consulta general', 3, 9, 7, 8),
+('2025-07-19', '14:00:00', '14:45:00', 'Pendiente', 'Colocación de resina', 4, 10, 8, 9),
+('2025-07-20', '08:30:00', '09:00:00', 'Confirmada', 'Radiografía dental', 5, 7, 9, 10),
+('2025-07-20', '09:15:00', '10:15:00', 'Completada', 'Colocación de corona', 5, 8, 10, 10);
+
+
+INSERT INTO pago (titulo, tipo_pago, monto, id_cita) VALUES
+('Pago limpieza', 'Efectivo', 500.00, 1),
+('Pago extracción', 'Transferencia', 1000.00, 2),
+('Pago blanqueamiento', 'Efectivo', 1500.00, 3),
+('Pago ortodoncia', 'Deposito', 5000.00, 4),
+('Pago implante', 'Transferencia', 8000.00, 5),
+('Pago endodoncia', 'Efectivo', 2500.00, 6),
+('Pago consulta', 'Efectivo', 300.00, 7),
+('Pago resina', 'Transferencia', 700.00, 8),
+('Pago radiografía', 'Efectivo', 400.00, 9),
+('Pago corona', 'Deposito', 3000.00, 10);
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////SELECTS////////////////////////////////////////////////
+
+////////user
+
+SELECT name, email, password, especialidad, rol
+FROM users
+WHERE rol = 'Dentista';
+
+SELECT name, email, password, especialidad, rol
+FROM users
+WHERE rol = 'Dentista' AND status = 'No activo';
+
+SELECT * FROM users
+ORDER BY created_at DESC
+LIMIT 5;
+
+SELECT name, email, password, especialidad, rol
+FROM users
+WHERE rol = 'Paciente';
+
+
+/////////////////servicio
+
+SELECT name, description, precio, duracion_estimada
+FROM servicio;
+
+
+
+
+
+/////////////////horario 
+
+/////////SENTENCIA PARA TRAER LA INFORMACION DEL HORARIO ASIGNADO A X DENTISTA/////////////
+/////////SUSTITUIR EL ID FIJO POR EL INGRESADO EN EL SELECT DE ESA VISTA/////////////////////
+
+SELECT fecha, inicio, fin
+FROM horario
+WHERE id_dentista = 7;
+
+
+/////////////SENTENCIA PARA TRAER LOS HORARIOS AGREGADOS RECIENTEMENTE////////////////////
+SELECT id_dentista, fecha, inicio, fin
+FROM horario 
+ORDER BY created_at DESC
+LIMIT 3; 
