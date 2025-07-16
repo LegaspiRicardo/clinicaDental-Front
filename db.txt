@@ -7,8 +7,8 @@ CREATE TABLE users (
   password VARCHAR(255),
   especialidad VARCHAR(100),
   status ENUM('Activo', 'No activo'),
-  rol ENUM('Admin', 'Dentista', 'Paciente') NOT NULL
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  rol ENUM('Admin', 'Dentista', 'Paciente') NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE servicio(
@@ -81,8 +81,6 @@ INSERT INTO users (name, email, password, especialidad, status, rol, created_at)
 ('Jorge Molina', 'jorge.molina@example.com', 'pass123', NULL, 'No activo', 'Paciente', '2025-07-15 16:45:00'),
 ('Lucía Navarro', 'lucia.navarro@example.com', 'pass123', NULL, 'Activo', 'Paciente', '2025-07-15 17:30:00');
 
-
-
 INSERT INTO servicio (name, description, precio, duracion_estimada) VALUES
 ('Limpieza dental', 'Limpieza profesional de dientes', 500.00, 30),
 ('Extracción', 'Extracción de pieza dental', 1000.00, 45),
@@ -143,11 +141,15 @@ INSERT INTO pago (titulo, tipo_pago, monto, id_cita) VALUES
 
 ////////user
 
-SELECT name, email, password, especialidad, rol
+SELECT name, email, password, especialidad
 FROM users
 WHERE rol = 'Dentista';
 
-SELECT name, email, password, especialidad, rol
+SELECT name, email, password, especialidad
+FROM users
+WHERE rol = 'Dentista' AND status = 'Activo';
+
+SELECT name, email, password, especialidad
 FROM users
 WHERE rol = 'Dentista' AND status = 'No activo';
 
@@ -155,12 +157,12 @@ SELECT * FROM users
 ORDER BY created_at DESC
 LIMIT 5;
 
-SELECT name, email, password, especialidad, rol
+SELECT name, email, password, rol
 FROM users
 WHERE rol = 'Paciente';
 
 
-/////////////////servicio
+//////////servicio
 
 SELECT name, description, precio, duracion_estimada
 FROM servicio;
@@ -169,18 +171,60 @@ FROM servicio;
 
 
 
-/////////////////horario 
+//////////horario 
 
-/////////SENTENCIA PARA TRAER LA INFORMACION DEL HORARIO ASIGNADO A X DENTISTA/////////////
-/////////SUSTITUIR EL ID FIJO POR EL INGRESADO EN EL SELECT DE ESA VISTA/////////////////////
+/////////SENTENCIA PARA TRAER LA INFORMACION DEL HORARIO ASIGNADO A X DENTISTA
+/////////SUSTITUIR EL ID FIJO POR EL INGRESADO EN EL SELECT DE ESA VISTA
 
 SELECT fecha, inicio, fin
 FROM horario
 WHERE id_dentista = 7;
 
 
-/////////////SENTENCIA PARA TRAER LOS HORARIOS AGREGADOS RECIENTEMENTE////////////////////
+/////////////SENTENCIA PARA TRAER LOS HORARIOS AGREGADOS RECIENTEMENTE
 SELECT id_dentista, fecha, inicio, fin
 FROM horario 
 ORDER BY created_at DESC
 LIMIT 3; 
+
+
+
+///////Paciente
+
+SELECT name, email, password
+FROM users
+WHERE rol = 'Paciente';
+
+
+//////////////Seleccionar los pacientes agendados recientemente que tengan
+///////////// el estado de la cita en "Confirmada"
+
+SELECT 
+  u.name AS nombre_paciente,
+  c.fecha,
+  c.inicio,
+  c.fin
+FROM cita c
+JOIN users u ON c.id_paciente = u.id
+WHERE u.rol = 'Paciente'
+AND c.status = 'Confirmada'
+ORDER BY c.created_at DESC;
+
+
+//////////////Seleccionar los pacientes agendados recientemente que tengan
+///////////// el estado de la cita en "Confirmada" o "Pendiente"
+
+SELECT 
+  u.name AS nombre_paciente,
+  c.fecha,
+  c.inicio,
+  c.fin,
+  c.status,
+  c.created_at
+FROM cita c
+JOIN users u ON c.id_paciente = u.id
+WHERE u.rol = 'Paciente'
+AND c.status = 'Confirmada'
+OR c.status = 'Pendiente'
+ORDER BY c.created_at DESC;
+
