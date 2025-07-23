@@ -1,5 +1,8 @@
 Comandos npm para el front
 
+npm create vite@latest
+
+
 npm install @mui/material @emotion/react @emotion/styled
 npm install react-router-dom axios zustand
 npm install axios
