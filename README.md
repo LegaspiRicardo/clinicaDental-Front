@@ -1,16 +1,25 @@
-1- Crear aplicación usando React
-	"npx create-next-app@latest"
+Comandos npm para el front
 
-2. Instalar fullCalendar con Typescrit version 18
-	"https://github.com/fullcalendar/fullcalendar-examples/tree/main/react18-typescript"
-	"cd fullcalendar-examples/react18-typescript"
-	"npm install"
-
-3. Instalar fullCalendar core para cambiar el calendario a español
-	"npm install @fullcalendar/core"
-
-4. Sustituye la carpeta src de las instalaciones, por la de este repositorio
+npm install @mui/material @emotion/react @emotion/styled
+npm install react-router-dom axios zustand
+npm install axios
 
 
-5. Corre                 para iniciar el proyecto
-	"npm run start"
+Para generar el JWT del archivo .env
+https://jwt.io/
+
+
+npm install @mui/icons-material
+npm install idb
+npm install vite-plugin-pwa
+
+
+npm install @fullcalendar/core
+
+
+
+npm install @fullcalendar/react @fullcalendar/core @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
+
+
+
+npm install @fullcalendar/react@5.11.3 @fullcalendar/core@5.11.3 @fullcalendar/daygrid@5.11.3 @fullcalendar/timegrid@5.11.3 @fullcalendar/interaction@5.11.3
