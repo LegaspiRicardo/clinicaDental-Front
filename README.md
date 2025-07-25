@@ -1,4 +1,4 @@
-Comandos npm para el front
+# Comandos npm para el front
 
 npm create vite@latest
 
@@ -30,7 +30,7 @@ npm install @fullcalendar/react@5.11.3 @fullcalendar/core@5.11.3 @fullcalendar/d
 
 
 
-# Dependencias de desarrollo (Tailwind 3 + PostCSS + Vite + TypeScript)
+ Dependencias de desarrollo (Tailwind 3 + PostCSS + Vite + TypeScript)
 npm install -D vite typescript @vitejs/plugin-react
 npm install -D tailwindcss@^3 postcss autoprefixer
 npm install -D eslint @types/react @types/react-dom
