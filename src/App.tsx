@@ -1,6 +1,6 @@
 // src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import VistaDentistas from './pages/Dentistas';
+import VistaDentista from './pages/Dentistas';
 import VistaPaciente from './pages/Pacientes';
 import VistaHorario from './pages/Horarios';
 import MyCalendar from './pages/MyCalendar';
@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<MyCalendar />} />
-          <Route path="/dentistas" element={<VistaDentistas />} />
+          <Route path="/dentistas" element={<VistaDentista />} />
           <Route path="/pacientes" element={<VistaPaciente />} />
           <Route path="/horarios" element={<VistaHorario />} />
         </Route>

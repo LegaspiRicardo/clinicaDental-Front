@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentEvents, sidebarOpen, toggleSid
       >
         {/* Logo y navegación */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-800 mb-16 mt-5">
+          <h2 className="text-2xl font-bold text-gray-800 mb-12 mt-5">
             <a href="/" className="hover:text-blue-600">DENTAL - ART</a>
           </h2>
           <ul className="space-y-2 ml-3">
