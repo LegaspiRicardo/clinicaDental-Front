@@ -5,20 +5,24 @@ import type { EventApi } from '@fullcalendar/core';
 import Sidebar from './Sidebar';
 
 const Layout = () => {
-  const [currentEvents, setCurrentEvents] = useState<EventApi[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [currentEvents, setCurrentEvents] = useState<EventApi[]>([
+    { id: '1', title: 'Consulta Juan Pérez', start: new Date() } as EventApi,
+    { id: '2', title: 'Ortodoncia Ana', start: new Date(Date.now() + 86400000) } as EventApi,
+  ]);
 
-return (
-    <div className="demo-app">
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  return (
+    <div className=" flex h-screen bg-cyan-800">
       <Sidebar
         currentEvents={currentEvents}
         sidebarOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
-      <div className="main-wrapper">
-        {/* Aquí va el contenido (MyCalendar, Dentistas, etc) */}
+
+      <main className="flex-1 overflow-y-auto ml-0 ">
         <Outlet context={{ setCurrentEvents }} />
-      </div>
+      </main>
     </div>
   );
 };

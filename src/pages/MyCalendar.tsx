@@ -45,30 +45,50 @@ const { setCurrentEvents } = useOutletContext<{ setCurrentEvents: React.Dispatch
   );
 
   return (
-    <div className="demo-app">
 
 
-      <div className="main-wrapper">
-        <div className="filters-bar">
-          <select className="filter-selects">
-            <option value="" hidden>Doctores y dentistas</option>
-            <option value="gomez">Dr. Gómez</option>
-            <option value="perez">Dra. Pérez</option>
-          </select>
 
-          <select className="filter-selects">
-            <option value="" hidden>Servicios</option>
-            <option value="general">Consulta general</option>
-            <option value="ortodoncia">Ortodoncia</option>
-            <option value="limpieza">Limpieza</option>
-            <option value="extraccion">Extracción</option>
-          </select>
 
-          <input type="text" placeholder="Buscar paciente" className="filter-input" />
-          <button className="filter-button">Filtrar</button>
-        </div>
+    
+    <div className="demo-app container mx-auto p-8 rounded-md bg-cyan-800">
 
-        <div className="calendar-container">
+
+
+
+      <div className="main-wrapper ">
+
+
+
+<div className="flex flex-wrap gap-4 mb-6 items-center">
+  <select className="border border-gray-300 rounded px-4 py-2 text-sm text-gray-700">
+    <option hidden>Doctores y dentistas</option>
+    <option value="gomez">Dr. Gómez</option>
+    <option value="perez">Dra. Pérez</option>
+  </select>
+
+  <select className="border border-gray-300 rounded px-4 py-2 text-sm text-gray-700">
+    <option hidden>Servicios</option>
+    <option value="general">Consulta general</option>
+    <option value="ortodoncia">Ortodoncia</option>
+    <option value="limpieza">Limpieza</option>
+    <option value="extraccion">Extracción</option>
+  </select>
+
+  <input
+    type="text"
+    placeholder="Buscar paciente"
+    className="border rounded px-4 py-2 text-sm text-gray-700"
+  />
+
+  <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+    Filtrar
+  </button>
+</div>
+
+
+
+
+        <div className="calendar-container bg-white p-8 rounded-lg">
           <FullCalendar
             locale={esLocale}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -88,9 +108,32 @@ const { setCurrentEvents } = useOutletContext<{ setCurrentEvents: React.Dispatch
             eventsSet={handleEvents}
           />
         </div>
+
+
+        <div className="mx-auto max-w-md overflow-hidden rounded-xl bg-white shadow-md md:max-w-2xl mt-5">
+          <div className="md:flex">
+            <div className="md:shrink-0">
+
+            </div>
+            <div className="p-8">
+              <div className="text-sm font-semibold tracking-wide text-indigo-500 uppercase">Company retreats</div>
+              <a href="#" className="mt-1 block text-lg leading-tight font-medium text-black hover:underline">
+                Incredible accommodation for your team
+              </a>
+              <p className="mt-2 text-gray-500">
+                Looking to take your team away on a retreat to enjoy awesome food and take in some sunshine? We have a list of
+                places to do just that.
+              </p>
+            </div>
+          </div>
+        </div>
+
+
       </div>
     </div>
   );
 };
+
+
 
 export default MyCalendar;
