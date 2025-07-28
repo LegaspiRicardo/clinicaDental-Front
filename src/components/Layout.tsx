@@ -20,7 +20,7 @@ const Layout = () => {
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      <main className="flex-1 overflow-y-auto ml-0 ">
+      <main className="flex-1 overflow-y-auto scrollbar-hide ml-0 ">
         <Outlet context={{ setCurrentEvents }} />
       </main>
     </div>

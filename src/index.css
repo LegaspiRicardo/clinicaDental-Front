@@ -11,3 +11,17 @@ body > div { /* the react root */
   height: 100%;
   background-color: rgba(255, 255, 255, 0.916) ;
 }
+
+
+.scrollbar-hide::-webkit-scrollbar {
+  width: 8px; /* o height si es scroll horizontal */
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  background: transparent; /* Esto quita el fondo blanco */
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3); /* Color del thumb (la barra que se mueve) */
+  border-radius: 8px;
+}
