@@ -41,10 +41,16 @@ const Sidebar: React.FC<SidebarProps> = ({ currentEvents, sidebarOpen, toggleSid
               <a href="/pacientes" className="block text-gray-700 text-xl my-8 hover:text-blue-500">Pacientes</a>
             </li>
             <li>
+              <a href="/servicios" className="block text-gray-700 text-xl my-8 hover:text-blue-500">Servicios</a>
+            </li>
+            <li>
               <a href="/horarios" className="block text-gray-700 text-xl my-8 hover:text-blue-500">Horarios</a>
             </li>
             <li>
-              <a href="/finanzas" className="block text-gray-700 text-xl my-8 hover:text-blue-500">Finanzas</a>
+              <a href="/" className="block text-gray-700 text-xl my-8 hover:text-blue-500">Citas</a>
+            </li>
+            <li>
+              <a href="/miperfil" className="block text-gray-700 text-xl mt-48 hover:text-blue-500">Mi perfil</a>
             </li>
           </ul>
         </div>

@@ -7,8 +7,8 @@ const VistaDentista = () => {
     <div className="demo-app container mx-auto p-8 bg-cyan-800 ">
       <div className="main-wrapper   ">
 
-        <h2 className="text-white text-4xl">Dentistas</h2>
 
+        <h2 className="text-white text-4xl">Dentistas</h2>
     
 
 {/* Tabla dentistas  */}
@@ -16,7 +16,7 @@ const VistaDentista = () => {
           <div className="h-96 overflow-auto scrollbar-hide rounded-lg">
             <table className="w-full ">
               
-              <thead className="bg-slate-300 sticky top-0 z-10">
+              <thead className="bg-slate-300 sticky top-0 z-10 text-xl">
                 <tr >
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Nombre</th>
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Especialidad</th>
@@ -169,7 +169,7 @@ const VistaDentista = () => {
           <div className="h-96 overflow-auto scrollbar-hide rounded-lg">
             <table className="w-full ">
               
-              <thead className="bg-slate-300 sticky top-0 z-10">
+              <thead className="bg-slate-300 sticky top-0 z-10 text-xl">
                 <tr >
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Nombre</th>
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Especialidad</th>

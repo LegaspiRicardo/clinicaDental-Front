@@ -9,7 +9,7 @@ import type { DateSelectArg, EventClickArg, EventContentArg, EventApi } from '@f
 import { createEventId } from '../utils/event-utils';
 import { useOutletContext } from 'react-router-dom';
 
-const CalendarHorario = () => {
+const MyCalendar = () => {
   const { setCurrentEvents } = useOutletContext<{ setCurrentEvents: React.Dispatch<React.SetStateAction<EventApi[]>> }>();
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
@@ -49,7 +49,7 @@ const CalendarHorario = () => {
     <div className="demo-app container mx-auto p-8 rounded-md bg-cyan-800">
 
       <div className="main-wrapper ">
-        <h2 className="text-white text-4xl mb-8">Horarios dentistas DENTAL - ART</h2>
+        <h2 className="text-white text-4xl mb-8">Citas DENTAL - ART</h2>
 
         <div className="flex flex-wrap gap-4 mb-6 items-center">
           <select className="border border-gray-300 rounded px-4 py-2 text-sm text-gray-700">
@@ -57,6 +57,24 @@ const CalendarHorario = () => {
             <option value="gomez">Dr. Gómez</option>
             <option value="perez">Dra. Pérez</option>
           </select>
+
+          <select className="border border-gray-300 rounded px-4 py-2 text-sm text-gray-700">
+            <option hidden>Servicios</option>
+            <option value="general">Consulta general</option>
+            <option value="ortodoncia">Ortodoncia</option>
+            <option value="limpieza">Limpieza</option>
+            <option value="extraccion">Extracción</option>
+          </select>
+
+          <input
+            type="text"
+            placeholder="Buscar paciente"
+            className="border rounded px-4 py-2 text-sm text-gray-700"
+          />
+
+          <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            Filtrar
+          </button>
         </div>
 
 
@@ -85,7 +103,7 @@ const CalendarHorario = () => {
 
 
         {/* Tabla pacientes agendados. orden descendente de las ultimas citas agendadas y a quien */}
-        <h2 className="mt-24  text-3xl text-white ">Horarios agregados recientemente</h2>
+        <h2 className="mt-24  text-3xl text-white ">Agregadas recientemente</h2>
         <div className=" container  w-3/6  rounded-lg shadow-md mt-5 ">
           <div className="h-96 overflow-auto scrollbar-hide rounded-lg">
             <table className="w-full ">
@@ -192,4 +210,4 @@ const CalendarHorario = () => {
 
 
 
-export default CalendarHorario;
+export default MyCalendar;
