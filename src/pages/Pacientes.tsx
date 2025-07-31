@@ -1,11 +1,59 @@
 // src/pages/Pacientes.tsx
+import { useState } from 'react';
+import Create_paciente from '../components/forms/create_paciente';
+import Delete_paciente from '../components/forms/delete_paciente';
+import Update_paciente from '../components/forms/update_paciente';
 
 const VistaPaciente = () => {
+  const [mostrarFormularioCrear, setMostrarFormularioCrear] = useState(false);
+  const [mostrarFormularioActualizar, setMostrarFormularioActualizar] = useState(false);
+  const [mostrarFormularioEliminar, setMostrarFormularioEliminar] = useState(false);
+
   return (
     <div className="demo-app container mx-auto p-8 bg-cyan-800 ">
       <div className="main-wrapper   ">
 
         <h2 className="text-white text-4xl">Pacientes</h2>
+
+        <div className='flex'>
+          {/* Botón para mostrar el formulario de crear */}
+          <div className="my-8">
+            <button
+              onClick={() => setMostrarFormularioCrear(!mostrarFormularioCrear)}
+              className="bg-cyan-600 text-white px-6 py-2 rounded hover:bg-cyan-700 transition"
+            >
+              {mostrarFormularioCrear ? 'Ocultar Formulario' : '+'}
+            </button>
+          </div>
+          {/* Botón para mostrar el formulario de editar*/}
+          <div className="my-8">
+            <button
+              onClick={() => setMostrarFormularioActualizar(!mostrarFormularioActualizar)}
+              className="bg-yellow-400 text-black px-6 py-2 rounded hover:bg-yellow-600 transition"
+            >
+              {mostrarFormularioActualizar ? 'Ocultar Formulario' : 'Editar'}
+            </button>
+          </div>
+          {/* Botón para mostrar el formulario de eliminar */}
+          <div className="my-8">
+            <button
+              onClick={() => setMostrarFormularioEliminar(!mostrarFormularioEliminar)}
+              className="bg-red-400 text-white px-6 py-2 rounded hover:bg-red-600 transition"
+            >
+              {mostrarFormularioEliminar ? 'Ocultar Formulario' : 'Eliminar'}
+            </button>
+          </div>
+        </div>
+        {/* Mostrar el formulario CREAR solo si mostrarFormulario es true */}
+        {mostrarFormularioCrear && <Create_paciente />}
+
+        {/* Mostrar el formulario ACTUALZAR solo si mostrarFormulario es true */}
+        {mostrarFormularioActualizar && <Update_paciente />}
+
+        {/* Mostrar el formulario ELIMINAR solo si mostrarFormulario es true */}
+        {mostrarFormularioEliminar && <Delete_paciente />}
+
+
 
 
 
