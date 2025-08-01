@@ -1,40 +1,108 @@
-const Update_paciente = () => {
+import { Box, TextField, Button, Typography, Select, MenuItem } from '@mui/material';
+import React, { useState } from 'react';
+import type { SelectChangeEvent } from '@mui/material/Select';
+
+
+const UpdatePaciente = () => {
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        // lógica de envío aquí
+    };
+
+
+    const [estatus, setEstatus] = useState('');
+
+    const handleChange = (event: SelectChangeEvent) => {
+        setEstatus(event.target.value);
+    };
+
+
+
     return (
-        <div className=" justify-center mx-auto w-5/6 flex-col bg-white p-2">
-            <div className="rounded-xl bg-white text-sm/7 text-gray-700 px-8 pt-8 pb-8">
-                <h3 className="text-2xl font-bold mb-4">Editar Paciente</h3>
-                <label className="mt-4" >Nombre</label>
-                <input type="text" className=" w-full border-2 mb-4 border-gray-300 rounded min-h-10" />
+        <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{
+                width: '90%',
+                maxWidth: 600,
+                margin: '0 auto',
+                backgroundColor: 'white',
+                padding: 4,
+                borderRadius: 2,
 
-                <label className="mt-4" >Correo electronico</label>
-                <input type="email" className=" w-full border-2 border-gray-300 mb-4 rounded min-h-10" placeholder=" exampleuser@gmail.com" />
+            }}
+        >
+            <Typography variant="h5" mb={3}>
+                Editar Paciente
+            </Typography>
 
-                <label className="mt-6" >Contraseña</label>
-                <input type="password" className="flex w-full rounded border-2 border-gray-300 min-h-10" />
+            <TextField
+                label="Nombre"
+                fullWidth
+                margin="normal"
+                variant="outlined"
+            />
 
-                <div className="flex ">
-                    <div className=" w-full flex">
-                        <div className=" w-3/6 mt-6">
-                            <label className="mt-4 " >Telefono</label>
-                            <input type="number" className="flex w-full rounded border-2 border-gray-300 py-1" />
-                        </div>
-                        <div className=" w-2/6 mx-auto mt-6">
-                            <label className="mt-4 " >Estatus</label>
-                            <select className="rounded flex w-full px-4 py-2 border-2 border-gray-300">
-                                <option hidden value="">Seleccione una</option>
-                                <option value="">Activo</option>
-                                <option value="">Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div className="w-3/6 text-center mx-auto">
-                    <button className="bg-yellow-600 py-2 mt-7 rounded w-3/6 text-white hover:bg-yellow-700">Editar</button>
+            <TextField
+                label="Correo electrónico"
+                type="email"
+                fullWidth
+                margin="normal"
+                variant="outlined"
+                placeholder="exampleuser@gmail.com"
+            />
 
-                </div>
-            </div>
-        </div>
+            <TextField
+                label="Contraseña"
+                type="password"
+                fullWidth
+                margin="normal"
+                variant="outlined"
+            />
+
+            <TextField
+                label="Teléfono"
+                type="number"
+                fullWidth
+                margin="normal"
+                variant="outlined"
+            />
+
+            <label htmlFor="" className='mt-8'>Estatus</label>
+            <Select
+                labelId="estatus-label"
+                id="estatus"
+                fullWidth
+                value={estatus}
+                label="Estatus"
+                sx={{ backgroundColor: '#f9fafb'}}
+                MenuProps={{   //Desactiva el estilo modal del select
+                    disablePortal: true,
+                    PaperProps: {
+                        sx: {
+                            backgroundColor: 'white', // o el color que estés usando
+                            boxShadow: 3,
+                            mt: 1,
+                        },
+                    },
+                }}
+            > 
+                <MenuItem value="" disabled >
+                    Seleccione una
+                </MenuItem>
+                <MenuItem value="activo" selected >Activo</MenuItem>
+                <MenuItem value="inactivo">Inactivo</MenuItem>
+            </Select>
+
+
+            <Box textAlign="center" mt={4}>
+                <Button type="submit" variant="contained" color="warning">
+                    Editar
+                </Button>
+            </Box>
+        </Box>
     );
 };
 
-export default Update_paciente;
+export default UpdatePaciente;
