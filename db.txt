@@ -12,12 +12,13 @@ CREATE TABLE users (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE servicio(
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100),
-  description TEXT,
-  precio DECIMAL(7,2),
-  duracion_estimada INT
+CREATE TABLE servicio (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    description TEXT,
+    precio DECIMAL(7,2),
+    duracion_estimada INT,
+    user_id INT
 );
 
 CREATE TABLE horario(
@@ -228,4 +229,5 @@ WHERE u.rol = 'Paciente'
 AND c.status = 'Confirmada'
 OR c.status = 'Pendiente'
 ORDER BY c.created_at DESC;
+
 
