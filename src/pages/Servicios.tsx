@@ -1,118 +1,110 @@
-// src/pages/Dentistas.tsx
-import { useState } from 'react';
+// src/pages/Servicios.tsx
+import React, { useState, useEffect } from 'react';
 import ServiciosCarousel from '../components/ServiciosCarousel';
 import Create_servicio from '../components/forms/create_servicio';
-import Delete_servicio from '../components/forms/delete_servicio';
 import Update_servicio from '../components/forms/update_servicio';
+import Delete_servicio from '../components/forms/delete_servicio';
+import axios from 'axios';
 
-const VistaDentista = () => {
+interface Servicio {
+    id: number;
+    name: string;
+    description?: string;
+    duracion_estimada: number;
+    precio: number;
+}
 
-    const [mostrarFormularioCrear, setMostrarFormularioCrear] = useState(false);
-    const [mostrarFormularioActualizar, setMostrarFormularioActualizar] = useState(false);
-    const [mostrarFormularioEliminar, setMostrarFormularioEliminar] = useState(false);
+const Servicios = () => {
+    const [servicios, setServicios] = useState<Servicio[]>([]);
+    const [mostrarCrear, setMostrarCrear] = useState(false);
+    const [mostrarActualizar, setMostrarActualizar] = useState(false);
+    const [mostrarEliminar, setMostrarEliminar] = useState(false);
+    const [servicioSeleccionado, setServicioSeleccionado] = useState<Servicio | null>(null);
 
+    const cargarServicios = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get('http://localhost:5000/api/servicios', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setServicios(res.data);
+        } catch (error) {
+            console.error('Error cargando servicios:', error);
+        }
+    };
+
+    useEffect(() => {
+        cargarServicios();
+    }, []);
 
     return (
         <div className="demo-app container mx-auto p-8 bg-cyan-800 ">
-            <div className="main-wrapper   ">
-                <h2 className="text-white text-4xl">Servicios</h2>
-                <div className='flex'>
-                    {/* Botón para mostrar el formulario de crear */}
-                    <div className="my-8">
-                        <button
-                            onClick={() => setMostrarFormularioCrear(!mostrarFormularioCrear)}
-                            className="bg-slate-400 text-white px-6 py-2 rounded hover:bg-slate-600 transition"
-                        >
-                            {mostrarFormularioCrear ? 'Ocultar Formulario' : '+'}
-                        </button>
-                    </div>
-                    {/* Botón para mostrar el formulario de editar*/}
-                    <div className="my-8">
-                        <button
-                            onClick={() => setMostrarFormularioActualizar(!mostrarFormularioActualizar)}
-                            className="bg-yellow-400 text-black px-6 py-2 rounded hover:bg-yellow-600 transition"
-                        >
-                            {mostrarFormularioActualizar ? 'Ocultar Formulario' : 'Editar'}
-                        </button>
-                    </div>
-                    {/* Botón para mostrar el formulario de eliminar */}
-                    <div className="my-8">
-                        <button
-                            onClick={() => setMostrarFormularioEliminar(!mostrarFormularioEliminar)}
-                            className="bg-red-400 text-white px-6 py-2 rounded hover:bg-red-600 transition"
-                        >
-                            {mostrarFormularioEliminar ? 'Ocultar Formulario' : 'Eliminar'}
-                        </button>
-                    </div>
-                </div>
-                {/* Mostrar el formulario CREAR solo si mostrarFormulario es true */}
-                {mostrarFormularioCrear && <Create_servicio />}
+            <h2 className="text-white text-4xl">Servicios</h2>
 
-                {/* Mostrar el formulario ACTUALZAR solo si mostrarFormulario es true */}
-                {mostrarFormularioActualizar && <Update_servicio />}
+            <div className="flex space-x-4 my-8">
+                <button
+                    onClick={() => {
+                        setMostrarCrear(!mostrarCrear);
+                        setMostrarActualizar(false);
+                        setMostrarEliminar(false);
+                    }}
+                    className="bg-slate-400 text-white px-6 py-2 rounded hover:bg-slate-600 transition"
+                >
+                    {mostrarCrear ? 'Ocultar Crear' : '+'}
+                </button>
+            </div>
 
-                {/* Mostrar el formulario ELIMINAR solo si mostrarFormulario es true */}
-                {mostrarFormularioEliminar && <Delete_servicio />}
+            {mostrarCrear && (
+                <Create_servicio
+                    onSuccess={() => {
+                        setMostrarCrear(false);
+                        cargarServicios();
+                    }}
+                    onClose={() => setMostrarCrear(false)}
+                />
+            )}
 
+            {mostrarActualizar && servicioSeleccionado && (
+                <Update_servicio
+                    servicio={servicioSeleccionado}
+                    onClose={() => {
+                        setMostrarActualizar(false);
+                        cargarServicios();
+                    }}
+                />
+            )}
 
-                {/* Seccion agregados recientemente */}
-                <div>
-                    <div className="h-96  mt-24 rounded-lg   ">
-                        <ServiciosCarousel />
-                    </div>
-                </div>
+            {mostrarEliminar && servicioSeleccionado && (
+                <Delete_servicio
+                    servicio={servicioSeleccionado}
+                    onClose={() => {
+                        setMostrarEliminar(false);
+                        cargarServicios();
+                    }}
+                />
+            )}
 
 
-                {/*Tabla para filtrar los servicios con mayor afluencia */}
-                <h2 className="mt-32  text-3xl text-white ">Servicios más solicitados</h2>
-                <div className=" container  w-3/6 bg-white rounded-lg shadow-md mt-5 ">
-                    <div className="h-80 overflow-auto scrollbar-hide rounded-lg">
-                        <table className="w-full ">
-
-                            <thead className="bg-slate-300 sticky top-0 z-10">
-                                <tr >
-                                    <th className="border-2 border-white border-b-gray-300 px-5 text-left">Servicio</th>
-                                    <th className="border-2 border-white border-b-gray-300 px-5 text-left">Total</th>
-                                </tr>
-                            </thead>
-
-                            <tbody >
-                                <tr className="hover:bg-gray-200">
-                                    <td className=" border-2 pt-4 border-white border-b-gray-300">Limpieza general</td>
-                                    <td className="border-2 pt-4 border-white border-b-gray-300"><b>84</b> servicios</td>
-                                </tr>
-                                <tr className="hover:bg-gray-200">
-                                    <td className="border-2 pt-4 border-white border-b-gray-300">Extracciones</td>
-                                    <td className="border-2 pt-4 border-white border-b-gray-300"><b>72</b> servicios</td>
-                                </tr>
-                                <tr className="hover:bg-gray-200">
-                                    <td className=" border-2 pt-4 border-white border-b-gray-300">Brackets</td>
-                                    <td className="border-2 pt-4 border-white border-b-gray-300"><b>66</b> servicios</td>
-                                </tr>
-                                <tr className="hover:bg-gray-200">
-                                    <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                                    <td className="border-2 pt-4 border-white border-b-gray-300"><b>50</b> servicios</td>
-                                </tr>
-                                <tr className="hover:bg-gray-200">
-                                    <td className=" border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                                    <td className="border-2 pt-4 border-white border-b-gray-300"><b>84</b> servicios</td>
-                                </tr>
-                                <tr className="hover:bg-gray-200">
-                                    <td className="border-2 pt-4 border-white border-b-gray-300">Limpieza profunda</td>
-                                    <td className="border-2 pt-4 border-white border-b-gray-300"><b>40</b> servicios</td>
-                                </tr>
-                                <tr className="hover:bg-gray-200">
-                                    <td className=" border-2 pt-4 border-white border-b-gray-300">Coronas</td>
-                                    <td className="border-2 pt-4 border-white border-b-gray-300"><b>38</b> servicios</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            {/* Seccion carrusel servicios */}
+            <div className="h-96 mt-24 rounded-lg">
+                <ServiciosCarousel
+                    servicios={servicios}
+                    onEditar={(servicio) => {
+                        setServicioSeleccionado(servicio);
+                        setMostrarActualizar(true);
+                        setMostrarCrear(false);
+                        setMostrarEliminar(false);
+                    }}
+                    onEliminar={(servicio) => {
+                        setServicioSeleccionado(servicio);
+                        setMostrarEliminar(true);
+                        setMostrarActualizar(false);
+                        setMostrarCrear(false);
+                    }}
+                />
             </div>
         </div>
     );
 };
 
-
-export default VistaDentista;
+export default Servicios;

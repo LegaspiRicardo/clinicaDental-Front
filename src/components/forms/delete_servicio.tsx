@@ -1,38 +1,133 @@
-const Delete_servicio = () => {
+// src/components/forms/update_servicio.tsx
+
+import React, { useState } from 'react';
+import { Box, TextField, Button, Typography, Select, MenuItem, InputLabel, FormControl } from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
+import axios from 'axios';
+import { checkConnection } from '../../utils/connectionStatus';
+import { saveServicio } from '../../utils/localServiciosDB'; // ← si implementas almacenamiento offline
+
+interface Servicio {
+    id: number;
+    name: string;
+    description?: string;
+    duracion_estimada: number;
+    precio: number;
+}
+
+
+interface Props {
+    servicio: Servicio;
+    onClose?: () => void; // Para cerrar el formulario desde fuera
+}
+
+const Delete_servicio: React.FC<Props> = ({ servicio, onClose }) => {
+    const [name, setName] = useState(servicio.name);
+    const [description, setDescription] = useState(servicio.description || '');
+    const [duracion_estimada, setDuracion_estimada] = useState(servicio.duracion_estimada);
+    const [precio, setPrecio] = useState(servicio.precio);
+
+const handleDelete = async () => {
+    if (checkConnection()) {
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:5000/api/servicios/${servicio.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            console.log('Servicio eliminado correctamente');
+            onClose?.(); // cerrar si se proporcionó callback
+        } catch (error) {
+            console.error('Error al eliminar el servicio:', error);
+        }
+    } else {
+        try {
+            // Aquí puedes guardar el "delete" offline si decides implementarlo
+            console.log('Servicio eliminado offline (pendiente de sincronización)');
+        } catch (error) {
+            console.error('Error guardando eliminación offline:', error);
+        }
+    }
+};
+
     return (
-        <div className=" justify-center mx-auto w-5/6 flex-col bg-white p-2">
-            <div className="rounded-xl bg-white text-sm/7 text-gray-700 px-8 pt-8 pb-8">
-                <h3 className="text-2xl font-bold mb-4">Eliminar Servicio</h3>
+        <Box
+            sx={{
+                width: '90%',
+                maxWidth: 600,
+                margin: '0 auto',
+                backgroundColor: 'white',
+                padding: 4,
+                borderRadius: 2,
+                mt: 4,
+            }}
+        >
+            <Typography variant="h5" mb={3}>
+                Eliminar Servicio
+            </Typography>
 
-                <label className="mt-4" >Nombre</label>
-                <input type="text" className=" w-full border-2 mb-4 border-gray-300 rounded min-h-10 bg-gray-400" disabled />
+            <TextField
+                label="Nombre"
+                fullWidth
+                margin="normal"
+                variant="outlined"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled
+            />
 
-                <label className="mt-4" >Descripción</label>
-                <input type="text" className=" w-full border-2 border-gray-300 mb-4 rounded min-h-40 bg-gray-400" disabled />
+            <TextField
+                label="Descripción"
+                fullWidth
+                multiline
+                rows={4}
+                margin="normal"
+                variant="outlined"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled
+            />
 
-                <label className="mt-6" >Duración estimada</label>
-                <select className="rounded flex w-full px-4 py-3 border-2 border-gray-300 bg-gray-400" disabled>
-                    <option hidden value="">Seleccione una</option>
-                    <option value="">30 minutos</option>
-                    <option value="">1 hora</option>
-                    <option value="">2 horas</option>
-                </select>
+            <FormControl fullWidth margin="normal">
+                <InputLabel id="duracion-label">Duración estimada</InputLabel>
+                <Select
+                    labelId="duracion-label"
+                    id="duracion"
+                    value={duracion_estimada.toString()} // ← debe ser string aquí
+                    onChange={(e: SelectChangeEvent) => setDuracion_estimada(Number(e.target.value))}
+                    label="Duración estimada"
+                >
+                    <MenuItem value=""><em>Seleccione una</em></MenuItem>
+                    <MenuItem value="30">30 minutos</MenuItem>
+                    <MenuItem value="60">1 hora</MenuItem>
+                    <MenuItem value="120">2 horas</MenuItem>
+                </Select>
+            </FormControl>
 
-                <hr className="border-(--pattern-fg) my-6 w-full" />
-                <div className="flex ">
-                    <div className=" w-full flex">
-                        <div className="w-3/6">
-                            <label className="mt-4 " >Precio</label>
-                            <input type="number" className="flex w-full rounded border-2 border-gray-300 min-h-10 bg-gray-400 " disabled />
-                        </div>
-                        <div className=" w-2/6 mx-auto">
-                            <button className="bg-red-500 py-2 mt-7 rounded w-5/6 ml-8 text-white ">Eliminar</button>
-                        </div>
-                    </div>
-                </div>
 
-            </div>
-        </div>
+            <TextField
+                label="Precio"
+                type="number"
+                fullWidth
+                margin="normal"
+                variant="outlined"
+                value={precio}
+                onChange={(e) => setPrecio(Number(e.target.value))} // ← convertir a número
+                disabled
+            />
+
+
+            <Box textAlign="center" mt={4}>
+                <Button variant="contained" color="error" onClick={handleDelete}>
+                    Eliminar
+                </Button>
+                {onClose && (
+                    <Button variant="text" sx={{ ml: 2 }} onClick={onClose}>
+                        Cancelar
+                    </Button>
+                )}
+            </Box>
+        </Box>
     );
 };
 

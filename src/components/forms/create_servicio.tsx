@@ -1,37 +1,173 @@
-const Create_servicio = () => {
+import React, { useState } from 'react';
+import {
+    Container,
+    Box,
+    Typography,
+    TextField,
+    Button,
+    Select,
+    MenuItem,
+    InputLabel,
+    FormControl,
+} from '@mui/material';
+import type { SelectChangeEvent } from '@mui/material/Select';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { checkConnection } from '../../utils/connectionStatus';
+// import { saveServicio } from '../../utils/localServiciosDB'; // Si implementas offline
+
+interface Props {
+    onSuccess?: () => void;
+    onClose?: () => void;
+}
+
+const Create_servicio: React.FC<Props> = ({ onSuccess, onClose }) => {
+    const [nombre, setNombre] = useState('');
+    const [descripcion, setDescripcion] = useState('');
+    const [duracion, setDuracion] = useState('');
+    const [precio, setPrecio] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const navigate = useNavigate();
+
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+
+        const nuevoServicio = {
+            name: nombre,
+            description: descripcion,
+            duracion_estimada: parseInt(duracion),
+            precio: parseFloat(precio),
+        };
+
+        if (checkConnection()) {
+            try {
+                const token = localStorage.getItem('token');
+                console.log('🔐 Token usado:', token);
+
+                const response = await axios.post(
+                    'http://localhost:5000/api/servicios',
+                    nuevoServicio,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                console.log('✅ Servicio creado (online):', response.data);
+                setErrorMessage('');
+                // Limpiar formulario
+                setNombre('');
+                setDescripcion('');
+                setDuracion('');
+                setPrecio('');
+                
+                if (onSuccess) onSuccess();
+                if (onClose) onClose();
+
+                navigate('/servicios'); // 👉 ajusta esta ruta si es necesario
+                
+            } catch (error: any) {
+                console.error('❌ Error al crear servicio:', error);
+                setErrorMessage(error.response?.data?.message || 'Error al crear el servicio');
+            }
+        } else {
+            try {
+                // await saveServicio({ ...nuevoServicio, pendingSync: true });
+                console.log('🟡 Servicio guardado offline (pendiente de sincronización)');
+            } catch (error) {
+                console.error('❌ Error guardando servicio offline:', error);
+            }
+        }
+    };
+
     return (
-        <div className=" justify-center mx-auto w-5/6 flex-col bg-white p-2">
-            <div className="rounded-xl bg-white text-sm/7 text-gray-700 px-8 pt-8 pb-8">
-                <h3 className="text-2xl font-bold mb-4">Nuevo Servicio</h3>
+        <Container maxWidth="sm">
+            <Box  sx={{
+                width: '90%',
+                maxWidth: 600,
+                margin: '0 auto',
+                backgroundColor: 'white',
+                padding: 4,
+                borderRadius: 2,
+                mt: 4,
+            }}>
+                <Typography variant="h4" align="center" gutterBottom>
+                    Crear Nuevo Servicio
+                </Typography>
+                <Box component="form" noValidate sx={{ mt: 2 }} onSubmit={handleSubmit}>
+                    <TextField
+                        label="Nombre"
+                        fullWidth
+                        margin="normal"
+                        variant="outlined"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                        required
+                    />
 
-                <label className="mt-4" >Nombre</label>
-                <input type="text" className=" w-full border-2 mb-4 border-gray-300 rounded min-h-10" />
+                    <TextField
+                        label="Descripción"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        margin="normal"
+                        variant="outlined"
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
+                        required
+                    />
 
-                <label className="mt-4" >Descripción</label>
-                <input type="text" className=" w-full border-2 border-gray-300 mb-4 rounded min-h-40" />
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="duracion-label">Duración estimada</InputLabel>
+                        <Select
+                            labelId="duracion-label"
+                            id="duracion"
+                            value={duracion}
+                            onChange={(e: SelectChangeEvent) => setDuracion(e.target.value)}
+                            label="Duración estimada"
+                            required
+                        >
+                            <MenuItem value="">
+                                <em>Seleccione una</em>
+                            </MenuItem>
+                            <MenuItem value="30">30 minutos</MenuItem>
+                            <MenuItem value="60">1 hora</MenuItem>
+                            <MenuItem value="120">2 horas</MenuItem>
+                        </Select>
+                    </FormControl>
 
-                <label className="mt-6" >Duración estimada</label>
-                <select className="rounded flex w-full px-4 py-3 border-2 border-gray-300">
-                    <option hidden value="">Seleccione una</option>
-                    <option value="">30 minutos</option>
-                    <option value="">1 hora</option>
-                    <option value="">2 horas</option>
-                </select>
+                    <TextField
+                        label="Precio"
+                        type="number"
+                        fullWidth
+                        margin="normal"
+                        variant="outlined"
+                        value={precio}
+                        onChange={(e) => setPrecio(e.target.value)}
+                        required
+                    />
 
-                <hr className="border-(--pattern-fg) my-6 w-full" />
-                <div className="flex ">
-                    <div className=" w-full flex">
-                        <div className="w-3/6">
-                            <label className="mt-4 " >Precio</label>
-                            <input type="number" className="flex w-full rounded border-2 border-gray-300 min-h-10 " />
-                        </div>
-                        <div className=" w-2/6 mx-auto">
-                            <button className="bg-slate-400 py-2 mt-7 rounded w-5/6 ml-8 text-white ">Agregar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    {errorMessage && (
+                        <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                            {errorMessage}
+                        </Typography>
+                    )}
+
+                    <Box textAlign="center" mt={4}>
+                        <Button type="submit" variant="contained" color="primary">
+                            Agregar
+                        </Button>
+                        {onClose && (
+                            <Button variant="text" sx={{ ml: 2 }} onClick={onClose}>
+                                Cancelar
+                            </Button>
+                        )}
+                    </Box>
+                </Box>
+            </Box>
+        </Container>
     );
 };
 
