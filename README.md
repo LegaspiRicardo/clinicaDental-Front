@@ -35,3 +35,9 @@ npm install @fullcalendar/react@5.11.3 @fullcalendar/core@5.11.3 @fullcalendar/d
 npm install -D vite typescript @vitejs/plugin-react
 npm install -D tailwindcss@^3 postcss autoprefixer
 npm install -D eslint @types/react @types/react-dom
+
+
+
+
+Para correr el proyecto. Accede a la carpeta raiz del proyecto a traves de la terminal, y corre el comando:
+"npm run dev"
