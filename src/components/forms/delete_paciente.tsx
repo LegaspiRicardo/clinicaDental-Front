@@ -1,40 +1,110 @@
-const Delete_paciente = () => {
+import React, { useState } from 'react';
+import axios from 'axios';
+import {
+  Box,
+  Typography,
+  Button,
+  CircularProgress,
+  Alert,
+} from '@mui/material';
+
+interface Props {
+  paciente: {
+    id: number;
+    username: string;
+    email: string;
+    telefono?: string;
+  };
+  onClose: () => void;
+  onDeleted: () => void; // callback para actualizar lista tras borrar
+}
+
+const DeletePaciente: React.FC<Props> = ({ paciente, onClose, onDeleted }) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await axios.delete(`http://localhost:5000/api/users/${paciente.id}`);
+      setSuccess(true);
+      onDeleted();
+    } catch (err) {
+      setError('Error al eliminar el paciente.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
     return (
-        <div className=" justify-center mx-auto w-5/6 flex-col bg-white p-2">
-            <div className="rounded-xl bg-white text-sm/7 text-gray-700 px-8 pt-8 pb-8">
-                <h3 className="text-2xl font-bold mb-4">Eliminar Paciente</h3>
-                <label className="mt-4" >Nombre</label>
-                <input type="text" className=" w-full border-2 mb-4 border-gray-300 rounded min-h-10 bg-gray-300" disabled/>
-
-                <label className="mt-4" >Correo electronico</label>
-                <input type="email" className=" w-full border-2 border-gray-300 mb-4 rounded min-h-10 bg-gray-300" placeholder=" exampleuser@gmail.com" disabled/>
-
-                <label className="mt-6" >Contraseña</label>
-                <input type="password" className="flex w-full rounded border-2 border-gray-300 min-h-10 bg-gray-300" disabled/>
-
-                <div className="flex ">
-                    <div className=" w-full flex">
-                        <div className=" w-3/6 mt-6">
-                            <label className="mt-4 " >Telefono</label>
-                            <input type="number" className="flex w-full rounded border-2 border-gray-300 py-1 bg-gray-300" disabled/>
-                        </div>
-                        <div className=" w-2/6 mx-auto mt-6">
-                            <label className="mt-4 " >Estatus</label>
-                            <select className="rounded flex w-full px-4 py-2 border-2 border-gray-300 bg-gray-300" disabled>
-                                <option hidden value="">Seleccione una</option>
-                                <option value="">Activo</option>
-                                <option value="">Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div className="w-3/6 text-center mx-auto">
-                    <button className="bg-red-600 py-2 mt-7 rounded w-3/6 text-white hover:bg-red-700">Eliminar</button>
-
-                </div>
-            </div>
-        </div>
+      <Box
+        sx={{
+          width: '90%',
+          maxWidth: 600,
+          margin: '0 auto',
+          backgroundColor: 'white',
+          padding: 4,
+          borderRadius: 2,
+          textAlign: 'center',
+        }}
+      >
+        <Typography variant="h5" mb={3}>
+          Paciente eliminado
+        </Typography>
+        <Typography>
+          El paciente <strong>{paciente.username}</strong> fue eliminado correctamente.
+        </Typography>
+        <Box mt={4}>
+          <Button variant="contained" onClick={onClose}>
+            Cerrar
+          </Button>
+        </Box>
+      </Box>
     );
+  }
+
+  return (
+    <Box
+      sx={{
+        width: '90%',
+        maxWidth: 600,
+        margin: '0 auto',
+        backgroundColor: 'white',
+        padding: 4,
+        borderRadius: 2,
+      }}
+    >
+      <Typography variant="h5" mb={3}>
+        Confirmar eliminación
+      </Typography>
+
+      <Typography mb={2}>
+        ¿Estás seguro que deseas eliminar al paciente <strong>{paciente.username}</strong> ({paciente.email})?
+      </Typography>
+
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+      <Box display="flex" justifyContent="space-between" mt={3}>
+        <Button variant="outlined" onClick={onClose} disabled={loading}>
+          Cancelar
+        </Button>
+
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleDelete}
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
+          Eliminar
+        </Button>
+      </Box>
+    </Box>
+  );
 };
 
-export default Delete_paciente;
+export default DeletePaciente;

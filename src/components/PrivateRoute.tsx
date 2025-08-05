@@ -7,11 +7,10 @@ interface PrivateRouteProps {
     children : React.ReactElement;
 }
 
-const PrivateRoute:React.FC<PrivateRouteProps> = ({children}) => {
+const PrivateRoute: React.FC<PrivateRouteProps> = ({children}) => {
     const token = localStorage.getItem("token");
-
     return token ? children:
-        <Navigate to="/" replace />;
+        <Navigate to="/login" replace />;
 
 };
 

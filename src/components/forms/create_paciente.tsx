@@ -17,21 +17,26 @@ const CreatePaciente: React.FC = () => {
         event.preventDefault();
 
         try {
-            await axios.post('http://localhost:3000/api/pacientes', {
-                nombre: username,
-                correo: email,
-                contrasena: password,
-                telefono: telefono,
-                status: 'activo',   // <-- valor oculto
-                rol: 'paciente',    // <-- valor oculto
+            await axios.post('http://localhost:5000/api/users/register', {
+                username,
+                email,
+                password,
+                telefono: parseInt(telefono, 10),
+                status: 'Activo',
+                rol: 'Paciente',
             });
 
-            // Redirigir después de agregar
             navigate('/pacientes');
         } catch (error) {
-            console.error('Error al crear paciente:', error);
+            if (axios.isAxiosError(error) && error.response?.status === 409) {
+                alert('El correo electrónico ya está registrado.');
+            } else {
+                console.error('Error al crear paciente:', error);
+                alert('Ocurrió un error, intenta nuevamente.');
+            }
         }
     };
+
 
     return (
         <Box

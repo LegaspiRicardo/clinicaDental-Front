@@ -1,6 +1,8 @@
 // src/components/Sidebar.tsx
+import { useNavigate } from 'react-router-dom';
 import React from 'react';
 import type { EventApi } from '@fullcalendar/core';
+import { Button } from '@mui/material';
 
 interface SidebarProps {
   currentEvents: EventApi[];
@@ -9,6 +11,11 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentEvents, sidebarOpen, toggleSidebar }) => {
+ const navigate = useNavigate();
+    const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
   return (
     <>
       {/* Botón hamburguesa: solo visible en pantallas < md */}
@@ -52,6 +59,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentEvents, sidebarOpen, toggleSid
             <li>
               <a href="/miperfil" className="block text-gray-700 text-xl mt-48 hover:text-blue-500">Mi perfil</a>
             </li>
+
+            <div className="mt-8">
+        <Button
+          variant="outlined"
+          color="error"
+          fullWidth
+          onClick={handleLogout}
+        >
+          Cerrar sesión
+        </Button>
+      </div>
           </ul>
         </div>
 
