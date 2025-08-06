@@ -3,8 +3,6 @@ import Create_paciente from '../components/forms/create_paciente';
 import Delete_paciente from '../components/forms/delete_paciente';
 import Update_paciente from '../components/forms/update_paciente';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-
 
 interface Paciente {
   id: number;
@@ -13,9 +11,7 @@ interface Paciente {
   telefono: number;
 }
 
-
 const VistaPaciente = () => {
-  const navigate = useNavigate();
   const [mostrarFormularioCrear, setMostrarFormularioCrear] = useState(false);
   const [mostrarFormularioActualizar, setMostrarFormularioActualizar] = useState(false);
   const [mostrarFormularioEliminar, setMostrarFormularioEliminar] = useState(false);
@@ -28,21 +24,6 @@ const VistaPaciente = () => {
       setPacientes(res.data);
     } catch (error) {
       console.error('Error al cargar pacientes:', error);
-    }
-  };
-
-
-    // Función para eliminar paciente
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de eliminar este paciente?')) return;
-
-    try {
-      await axios.delete(`http://localhost:5000/api/users/${id}`);
-      alert('Paciente eliminado correctamente');
-      cargarPacientes(); // recarga la lista
-    } catch (error) {
-      console.error('Error al eliminar paciente:', error);
-      alert('No se pudo eliminar el paciente.');
     }
   };
 
@@ -60,13 +41,12 @@ const VistaPaciente = () => {
             setMostrarFormularioCrear(!mostrarFormularioCrear);
             setMostrarFormularioActualizar(false);
             setMostrarFormularioEliminar(false);
+            setPacienteSeleccionado(null);
           }}
           className="bg-cyan-600 text-white px-6 py-2 rounded hover:bg-cyan-700 transition"
         >
           {mostrarFormularioCrear ? 'Ocultar Formulario' : '+'}
         </button>
-
-
       </div>
 
       {mostrarFormularioCrear && (
@@ -78,17 +58,32 @@ const VistaPaciente = () => {
         />
       )}
 
-
-
-      {mostrarFormularioEliminar && pacienteSeleccionado && (
-        <Delete_paciente
+      {mostrarFormularioActualizar && pacienteSeleccionado && (
+        <Update_paciente
           paciente={pacienteSeleccionado}
           onClose={() => {
-            setMostrarFormularioEliminar(false);
+            setMostrarFormularioActualizar(false);
+            setPacienteSeleccionado(null);
             cargarPacientes();
           }}
         />
       )}
+
+{mostrarFormularioEliminar && pacienteSeleccionado && (
+  <Delete_paciente
+    paciente={pacienteSeleccionado}
+    onClose={() => {
+      setMostrarFormularioEliminar(false);
+      setPacienteSeleccionado(null);
+    }}
+    onDeleted={() => {
+      setMostrarFormularioEliminar(false);
+      setPacienteSeleccionado(null);
+      cargarPacientes();
+    }}
+  />
+)}
+
 
       {/* Tabla pacientes */}
       <div className="container mx-auto bg-white rounded-lg shadow-md mt-5">
@@ -112,7 +107,10 @@ const VistaPaciente = () => {
                   <td className="border-2 px-4 py-2 text-center">
                     <button
                       onClick={() => {
-                        navigate(`/pacientes/${paciente.id}`);
+                        setPacienteSeleccionado(paciente);
+                        setMostrarFormularioActualizar(true);
+                        setMostrarFormularioCrear(false);
+                        setMostrarFormularioEliminar(false);
                       }}
                       className="bg-yellow-400 text-black px-4 py-1 rounded hover:bg-yellow-600"
                     >
@@ -120,12 +118,17 @@ const VistaPaciente = () => {
                     </button>
                   </td>
                   <td className="border-2 px-4 py-2 text-center">
-<button
-                  onClick={() => handleDelete(paciente.id)}
-                  className="btn-eliminar"
-                >
-                  Eliminar
-                </button>
+                    <button
+                      onClick={() => {
+                        setPacienteSeleccionado(paciente);
+                        setMostrarFormularioEliminar(true);
+                        setMostrarFormularioCrear(false);
+                        setMostrarFormularioActualizar(false);
+                      }}
+                      className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700"
+                    >
+                      Eliminar
+                    </button>
                   </td>
                 </tr>
               ))}

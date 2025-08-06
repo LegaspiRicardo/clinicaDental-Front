@@ -3,8 +3,12 @@ import { TextField, Box, Typography, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const CreatePaciente: React.FC = () => {
-    const navigate = useNavigate();
+interface Props {
+  onSuccess: () => void;
+}
+
+const CreatePaciente: React.FC<Props> = ({ onSuccess }) => {
+
 
     // Estados para los campos del formulario
     const [username, setUsername] = useState('');
@@ -26,7 +30,8 @@ const CreatePaciente: React.FC = () => {
                 rol: 'Paciente',
             });
 
-            navigate('/pacientes');
+            onSuccess();
+
         } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 409) {
                 alert('El correo electrónico ya está registrado.');

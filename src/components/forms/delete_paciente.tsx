@@ -83,15 +83,13 @@ const DeletePaciente: React.FC<Props> = ({ paciente, onClose, onDeleted }) => {
       </Typography>
 
       <Typography mb={2}>
-        ¿Estás seguro que deseas eliminar al paciente <strong>{paciente.username}</strong> ({paciente.email})?
+        ¿Estás seguro que deseas eliminar al paciente <strong>{paciente.username}</strong> ?
       </Typography>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       <Box display="flex" justifyContent="space-between" mt={3}>
-        <Button variant="outlined" onClick={onClose} disabled={loading}>
-          Cancelar
-        </Button>
+
 
         <Button
           variant="contained"
@@ -101,6 +99,9 @@ const DeletePaciente: React.FC<Props> = ({ paciente, onClose, onDeleted }) => {
           startIcon={loading ? <CircularProgress size={20} /> : null}
         >
           Eliminar
+        </Button>
+                <Button variant="outlined" onClick={onClose} disabled={loading}>
+          Cancelar
         </Button>
       </Box>
     </Box>

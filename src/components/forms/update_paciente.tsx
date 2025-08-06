@@ -8,14 +8,20 @@ import {
     MenuItem
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material/Select';
-import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+interface Props {
+    paciente: {
+        id: number;
+        username: string;
+        email: string;
+        telefono: number;
+        status: string;
+    };
+    onClose: () => void;
+}
 
-const UpdatePaciente = () => {
-    const { id } = useParams();
-    const navigate = useNavigate();
-
+const UpdatePaciente: React.FC<Props> = ({ paciente, onClose }) => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -23,23 +29,14 @@ const UpdatePaciente = () => {
     const [estatus, setEstatus] = useState('');
 
     useEffect(() => {
-        const fetchPaciente = async () => {
-            try {
-                const response = await axios.get(`http://localhost:5000/api/users/${id}`);
-                const paciente = response.data;
+        if (paciente) {
+            setUsername(paciente.username);
+            setEmail(paciente.email);
+            setTelefono(paciente.telefono.toString());
+            setEstatus(paciente.status ?? 'Activo');
 
-                setUsername(paciente.username);
-                setEmail(paciente.email);
-                setTelefono(paciente.telefono.toString());
-                setEstatus(paciente.status);
-            } catch (error) {
-                console.error("Error al cargar el paciente:", error);
-                alert("No se pudo cargar la información del paciente.");
-            }
-        };
-
-        fetchPaciente();
-    }, [id]);
+        }
+    }, [paciente]);
 
     const handleChangeEstatus = (event: SelectChangeEvent) => {
         setEstatus(event.target.value);
@@ -49,7 +46,7 @@ const UpdatePaciente = () => {
         event.preventDefault();
 
         try {
-            await axios.put(`http://localhost:5000/api/users/${id}`, {
+            await axios.put(`http://localhost:5000/api/users/${paciente.id}`, {
                 username,
                 email,
                 password: password || undefined, // solo si se edita
@@ -57,7 +54,7 @@ const UpdatePaciente = () => {
                 status: estatus,
             });
 
-            navigate('/pacientes');
+            onClose();
         } catch (error) {
             console.error("Error al actualizar paciente:", error);
             alert("Ocurrió un error al actualizar el paciente.");
@@ -103,15 +100,7 @@ const UpdatePaciente = () => {
                 required
             />
 
-            <TextField
-                label="Contraseña (dejar en blanco para no cambiar)"
-                type="password"
-                fullWidth
-                margin="normal"
-                variant="outlined"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
+
 
             <TextField
                 label="Teléfono"
@@ -127,34 +116,26 @@ const UpdatePaciente = () => {
                 Estatus
             </Typography>
             <Select
-                labelId="estatus-label"
-                id="estatus"
                 fullWidth
                 value={estatus}
                 onChange={handleChangeEstatus}
-                sx={{ backgroundColor: '#f9fafb' }}
                 required
-                MenuProps={{
-                    disablePortal: true,
-                    PaperProps: {
-                        sx: {
-                            backgroundColor: 'white',
-                            boxShadow: 3,
-                            mt: 1,
-                        },
-                    },
+                sx={{
+                    backgroundColor: '#f9fafb',
+                    color: 'black',
+                    '.MuiSelect-select': {
+                        color: 'black'
+                    }
                 }}
             >
-                <MenuItem value="" disabled>
-                    Seleccione una
-                </MenuItem>
-                <MenuItem value="Activo">Activo</MenuItem>
+                <MenuItem value="" disabled>Seleccione una</MenuItem>
+                <MenuItem value="Activo" >Activo</MenuItem>
                 <MenuItem value="Inactivo">Inactivo</MenuItem>
             </Select>
 
             <Box textAlign="center" mt={4}>
                 <Button type="submit" variant="contained" color="warning">
-                    Editar
+                    Guardar Cambios
                 </Button>
             </Box>
         </Box>
