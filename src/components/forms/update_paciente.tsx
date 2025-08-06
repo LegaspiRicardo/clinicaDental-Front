@@ -1,145 +1,124 @@
-import React, { useEffect, useState } from 'react';
-import {
-    Box,
-    TextField,
-    Button,
-    Typography,
-    Select,
-    MenuItem
-} from '@mui/material';
-import type { SelectChangeEvent } from '@mui/material/Select';
+import React, { useState, useEffect } from 'react';
+import { TextField, Box, Typography, Button, MenuItem } from '@mui/material';
 import axios from 'axios';
 
+interface Paciente {
+  id: number;
+  username: string;
+  email: string;
+  telefono: number;
+  status: string;
+}
+
 interface Props {
-    paciente: {
-        id: number;
-        username: string;
-        email: string;
-        telefono: number;
-        status: string;
-    };
-    onClose: () => void;
+  paciente: Paciente;
+  onClose: () => void;
 }
 
 const UpdatePaciente: React.FC<Props> = ({ paciente, onClose }) => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [estatus, setEstatus] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [status, setStatus] = useState('');
+  const [password, setPassword] = useState(''); // opcional
 
-    useEffect(() => {
-        if (paciente) {
-            setUsername(paciente.username);
-            setEmail(paciente.email);
-            setTelefono(paciente.telefono.toString());
-            setEstatus(paciente.status ?? 'Activo');
+  useEffect(() => {
+    if (paciente) {
+      setUsername(paciente.username);
+      setEmail(paciente.email);
+      setTelefono(paciente.telefono.toString());
+      setStatus(paciente.status || 'Activo');
+    }
+  }, [paciente]);
 
-        }
-    }, [paciente]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    const handleChangeEstatus = (event: SelectChangeEvent) => {
-        setEstatus(event.target.value);
-    };
+    try {
+      await axios.put(`http://localhost:5000/api/users/${paciente.id}`, {
+        username,
+        email,
+        telefono: parseInt(telefono, 10),
+        password: password || undefined,
+        status,
+      });
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
+      onClose(); // cerrar formulario y actualizar
+    } catch (error) {
+      console.error('Error al actualizar paciente:', error);
+      alert('Ocurrió un error al actualizar el paciente.');
+    }
+  };
 
-        try {
-            await axios.put(`http://localhost:5000/api/users/${paciente.id}`, {
-                username,
-                email,
-                password: password || undefined, // solo si se edita
-                telefono: parseInt(telefono, 10),
-                status: estatus,
-            });
+  return (
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      noValidate
+      sx={{
+        width: '90%',
+        maxWidth: 600,
+        margin: '0 auto',
+        backgroundColor: 'white',
+        padding: 4,
+        borderRadius: 2,
+      }}
+    >
+      <Typography variant="h5" mb={3}>Actualizar Paciente</Typography>
 
-            onClose();
-        } catch (error) {
-            console.error("Error al actualizar paciente:", error);
-            alert("Ocurrió un error al actualizar el paciente.");
-        }
-    };
+      <TextField
+        label="Nombre"
+        fullWidth
+        margin="normal"
+        required
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+      />
+      <TextField
+        label="Correo electrónico"
+        type="email"
+        fullWidth
+        margin="normal"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <TextField
+        label="Contraseña (opcional)"
+        type="password"
+        fullWidth
+        margin="normal"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <TextField
+        label="Teléfono"
+        type="number"
+        fullWidth
+        margin="normal"
+        value={telefono}
+        onChange={(e) => setTelefono(e.target.value)}
+      />
+      <TextField
+        select
+        label="Estatus"
+        fullWidth
+        margin="normal"
+        required
+        value={status}
+        onChange={(e) => setStatus(e.target.value)}
+      >
+        <MenuItem value="Activo">Activo</MenuItem>
+        <MenuItem value="Inactivo">Inactivo</MenuItem>
+      </TextField>
 
-    return (
-        <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{
-                width: '90%',
-                maxWidth: 600,
-                margin: '0 auto',
-                backgroundColor: 'white',
-                padding: 4,
-                borderRadius: 2,
-            }}
-        >
-            <Typography variant="h5" mb={3}>
-                Editar Paciente
-            </Typography>
-
-            <TextField
-                label="Nombre"
-                fullWidth
-                margin="normal"
-                variant="outlined"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-            />
-
-            <TextField
-                label="Correo electrónico"
-                type="email"
-                fullWidth
-                margin="normal"
-                variant="outlined"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-            />
-
-
-
-            <TextField
-                label="Teléfono"
-                type="number"
-                fullWidth
-                margin="normal"
-                variant="outlined"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-            />
-
-            <Typography variant="subtitle1" mt={2} mb={1}>
-                Estatus
-            </Typography>
-            <Select
-                fullWidth
-                value={estatus}
-                onChange={handleChangeEstatus}
-                required
-                sx={{
-                    backgroundColor: '#f9fafb',
-                    color: 'black',
-                    '.MuiSelect-select': {
-                        color: 'black'
-                    }
-                }}
-            >
-                <MenuItem value="" disabled>Seleccione una</MenuItem>
-                <MenuItem value="Activo" >Activo</MenuItem>
-                <MenuItem value="Inactivo">Inactivo</MenuItem>
-            </Select>
-
-            <Box textAlign="center" mt={4}>
-                <Button type="submit" variant="contained" color="warning">
-                    Guardar Cambios
-                </Button>
-            </Box>
-        </Box>
-    );
+      <Box textAlign="center" mt={4}>
+        <Button type="submit" variant="contained" color="primary">
+          Actualizar
+        </Button>
+      </Box>
+    </Box>
+  );
 };
 
 export default UpdatePaciente;

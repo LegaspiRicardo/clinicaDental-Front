@@ -1,71 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Box, Button, Typography } from '@mui/material';
 import axios from 'axios';
-import {
-  Box,
-  Typography,
-  Button,
-  CircularProgress,
-  Alert,
-} from '@mui/material';
 
 interface Props {
-  paciente: {
-    id: number;
-    username: string;
-    email: string;
-    telefono?: string;
-  };
+  pacienteId: number;
   onClose: () => void;
-  onDeleted: () => void; // callback para actualizar lista tras borrar
 }
 
-const DeletePaciente: React.FC<Props> = ({ paciente, onClose, onDeleted }) => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
+const DeletePaciente: React.FC<Props> = ({ pacienteId, onClose }) => {
   const handleDelete = async () => {
-    setLoading(true);
-    setError(null);
     try {
-      await axios.delete(`http://localhost:5000/api/users/${paciente.id}`);
-      setSuccess(true);
-      onDeleted();
-    } catch (err) {
-      setError('Error al eliminar el paciente.');
-      console.error(err);
-    } finally {
-      setLoading(false);
+      await axios.delete(`http://localhost:5000/api/users/${pacienteId}`);
+      onClose();
+    } catch (error) {
+      console.error('Error al eliminar paciente:', error);
+      alert('Ocurrió un error al eliminar el paciente.');
     }
   };
-
-  if (success) {
-    return (
-      <Box
-        sx={{
-          width: '90%',
-          maxWidth: 600,
-          margin: '0 auto',
-          backgroundColor: 'white',
-          padding: 4,
-          borderRadius: 2,
-          textAlign: 'center',
-        }}
-      >
-        <Typography variant="h5" mb={3}>
-          Paciente eliminado
-        </Typography>
-        <Typography>
-          El paciente <strong>{paciente.username}</strong> fue eliminado correctamente.
-        </Typography>
-        <Box mt={4}>
-          <Button variant="contained" onClick={onClose}>
-            Cerrar
-          </Button>
-        </Box>
-      </Box>
-    );
-  }
 
   return (
     <Box
@@ -78,29 +29,15 @@ const DeletePaciente: React.FC<Props> = ({ paciente, onClose, onDeleted }) => {
         borderRadius: 2,
       }}
     >
-      <Typography variant="h5" mb={3}>
-        Confirmar eliminación
+      <Typography variant="h6" mb={3}>
+        ¿Estás seguro de que deseas eliminar este paciente?
       </Typography>
 
-      <Typography mb={2}>
-        ¿Estás seguro que deseas eliminar al paciente <strong>{paciente.username}</strong> ?
-      </Typography>
-
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-      <Box display="flex" justifyContent="space-between" mt={3}>
-
-
-        <Button
-          variant="contained"
-          color="error"
-          onClick={handleDelete}
-          disabled={loading}
-          startIcon={loading ? <CircularProgress size={20} /> : null}
-        >
+      <Box display="flex" justifyContent="center" gap={2}>
+        <Button variant="contained" color="error" onClick={handleDelete}>
           Eliminar
         </Button>
-                <Button variant="outlined" onClick={onClose} disabled={loading}>
+        <Button variant="outlined" onClick={onClose}>
           Cancelar
         </Button>
       </Box>

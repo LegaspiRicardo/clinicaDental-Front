@@ -1,25 +1,44 @@
-// src/pages/Dentistas.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import RecentDoctorCarousel from '../components/RecentDoctorCarousel';
 import Create_dentista from '../components/forms/create_dentista';
 import Delete_dentista from '../components/forms/delete_dentista';
 import Update_dentista from '../components/forms/update_dentista';
 
-const VistaDentista = () => {
+interface Dentista {
+  id: number;
+  username: string;
+  email: string;
+  telefono: number;
+  especialidad: string;
+}
 
-  
-    const [mostrarFormularioCrear, setMostrarFormularioCrear] = useState(false);
-    const [mostrarFormularioActualizar, setMostrarFormularioActualizar] = useState(false);
-    const [mostrarFormularioEliminar, setMostrarFormularioEliminar] = useState(false);
+const VistaDentista = () => {
+  const [mostrarFormularioCrear, setMostrarFormularioCrear] = useState(false);
+  const [dentistas, setDentistas] = useState<Dentista[]>([]);
+  const [dentistaSeleccionado, setDentistaSeleccionado] = useState<Dentista | null>(null);
+  const [dentistaAEliminar, setDentistaAEliminar] = useState<Dentista | null>(null);
+
+  const obtenerDentistas = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/users/dentistas');
+      setDentistas(res.data);
+    } catch (error) {
+      console.error('Error al cargar dentistas:', error);
+    }
+  };
+
+  useEffect(() => {
+    obtenerDentistas();
+  }, []);
 
   return (
-    <div className="demo-app container mx-auto p-8 bg-cyan-800 ">
-      <div className="main-wrapper   ">
-
-
+    <div className="demo-app container mx-auto p-8 bg-cyan-800">
+      <div className="main-wrapper">
         <h2 className="text-white text-4xl">Dentistas</h2>
-        <div className='flex'>
-          {/* Botón para mostrar el formulario de crear */}
+
+        {/* Botones */}
+        <div className="flex">
           <div className="my-8">
             <button
               onClick={() => setMostrarFormularioCrear(!mostrarFormularioCrear)}
@@ -28,42 +47,42 @@ const VistaDentista = () => {
               {mostrarFormularioCrear ? 'Ocultar Formulario' : '+'}
             </button>
           </div>
-          {/* Botón para mostrar el formulario de editar*/}
-          <div className="my-8">
-            <button
-              onClick={() => setMostrarFormularioActualizar(!mostrarFormularioActualizar)}
-              className="bg-yellow-400 text-black px-6 py-2 rounded hover:bg-yellow-600 transition"
-            >
-              {mostrarFormularioActualizar ? 'Ocultar Formulario' : 'Editar'}
-            </button>
-          </div>
-          {/* Botón para mostrar el formulario de eliminar */}
-          <div className="my-8">
-            <button
-              onClick={() => setMostrarFormularioEliminar(!mostrarFormularioEliminar)}
-              className="bg-red-400 text-white px-6 py-2 rounded hover:bg-red-600 transition"
-            >
-              {mostrarFormularioEliminar ? 'Ocultar Formulario' : 'Eliminar'}
-            </button>
-          </div>
         </div>
-        {/* Mostrar el formulario CREAR solo si mostrarFormulario es true */}
-        {mostrarFormularioCrear && <Create_dentista />}
 
-        {/* Mostrar el formulario ACTUALZAR solo si mostrarFormulario es true */}
-        {mostrarFormularioActualizar && <Update_dentista />}
+        {/* Formularios */}
+        {mostrarFormularioCrear && (
+          <Create_dentista
+            onSuccess={obtenerDentistas}
+            onClose={() => setMostrarFormularioCrear(false)}
+          />
+        )}
 
-        {/* Mostrar el formulario ELIMINAR solo si mostrarFormulario es true */}
-        {mostrarFormularioEliminar && <Delete_dentista />}
+        {dentistaSeleccionado && (
+          <Update_dentista
+            dentista={dentistaSeleccionado}
+            onClose={() => {
+              setDentistaSeleccionado(null);
+              obtenerDentistas();
+            }}
+          />
+        )}
 
+        {dentistaAEliminar && (
+          <Delete_dentista
+            dentista={dentistaAEliminar}
+            onClose={() => {
+              setDentistaAEliminar(null);
+              obtenerDentistas();
+            }}
+          />
+        )}
 
-        {/* Tabla dentistas  */}
-        <div className=" container  mx-auto bg-white rounded-lg shadow-md mt-5 ">
+        {/* Tabla de dentistas */}
+        <div className="container mx-auto bg-white rounded-lg shadow-md mt-5">
           <div className="h-96 overflow-auto scrollbar-hide rounded-lg">
-            <table className="w-full ">
-
+            <table className="w-full">
               <thead className="bg-slate-300 sticky top-0 z-10 text-xl">
-                <tr >
+                <tr>
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Nombre</th>
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Especialidad</th>
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Correo</th>
@@ -72,264 +91,61 @@ const VistaDentista = () => {
                 </tr>
               </thead>
 
-              <tbody >
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">mariano@gmail.com</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">monicaaae3432@gmail.com</td>
-                </tr>
-
-
+              <tbody>
+                {dentistas.map((d) => (
+                  <tr key={d.id} className="hover:bg-gray-200">
+                    <td className="border-2 pt-4 border-white border-b-gray-300">{d.username}</td>
+                    <td className="border-2 pt-4 border-white border-b-gray-300">{d.especialidad}</td>
+                    <td className="border-2 pt-4 border-white border-b-gray-300">{d.email}</td>
+                    <td
+                      className="border-2 pt-4 border-white border-b-gray-300 text-center cursor-pointer"
+                      onClick={() => setDentistaSeleccionado(d)}
+                    >
+                      ✏️
+                    </td>
+                    <td
+                      className="border-2 pt-4 border-white border-b-gray-300 text-center cursor-pointer"
+                      onClick={() => setDentistaAEliminar(d)}
+                    >
+                      🗑️
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* Seccion agregados recientemente */}
-        <div>
-          <div className="h-96  mt-32 rounded-lg   ">
-            <RecentDoctorCarousel />
-
-          </div>
+        {/* Carrusel de dentistas recientes */}
+        <div className="h-96 mt-32 rounded-lg">
+          <RecentDoctorCarousel />
         </div>
 
-
-        {/* Tabla dentistas por especialidad, aplicar un sortby seguramente xd */}
-        <h2 className="my-8  text-3xl text-white ">Dentistas por especialidad</h2>
-        <div className=" container  w-3/6 bg-white rounded-lg shadow-md mt-5 ">
+        {/* Dentistas por especialidad */}
+        <h2 className="my-8 text-3xl text-white">Dentistas por especialidad</h2>
+        <div className="container w-3/6 bg-white rounded-lg shadow-md mt-5">
           <div className="h-96 overflow-auto scrollbar-hide rounded-lg">
-            <table className="w-full ">
-
+            <table className="w-full">
               <thead className="bg-slate-300 sticky top-0 z-10 text-xl">
-                <tr >
+                <tr>
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Nombre</th>
                   <th className="border-2 border-white border-b-gray-300 px-5 text-left">Especialidad</th>
                 </tr>
               </thead>
-
-              <tbody >
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className=" border-2 pt-4 border-white border-b-gray-300">Erick Mariano Madera Cataño</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Ortodoncia</td>
-                </tr>
-                <tr className="hover:bg-gray-200">
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Monica Coronado Bajado</td>
-                  <td className="border-2 pt-4 border-white border-b-gray-300">Implantes</td>
-                </tr>
-
-
+              <tbody>
+                {dentistas.map((d) => (
+                  <tr key={d.id} className="hover:bg-gray-200">
+                    <td className="border-2 pt-4 border-white border-b-gray-300">{d.username}</td>
+                    <td className="border-2 pt-4 border-white border-b-gray-300">{d.especialidad}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
-
       </div>
     </div>
   );
 };
-
 
 export default VistaDentista;

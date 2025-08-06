@@ -1,44 +1,113 @@
-const Create_servicio = () => {
+import React, { useState } from 'react';
+import { TextField, Box, Typography, Button, MenuItem } from '@mui/material';
+import axios from 'axios';
+
+interface Props {
+    onSuccess: () => void;
+    onClose: () => void;
+}
+
+const Create_dentista: React.FC<Props> = ({ onSuccess, onClose }) => {
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [telefono, setTelefono] = useState('');
+    const [especialidad, setEspecialidad] = useState('');
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        try {
+            await axios.post('http://localhost:5000/api/users/register', {
+                username,
+                email,
+                password,
+                telefono: parseInt(telefono),
+                especialidad,
+                rol: 'Dentista',
+                status: 'Activo',
+            });
+
+            onSuccess(); 
+            onClose();
+        } catch (error) {
+            console.error('Error al registrar dentista:', error);
+            alert('Ocurrió un error al registrar el dentista.');
+        }
+    };
+
     return (
-        <div className=" justify-center mx-auto w-5/6 flex-col bg-white p-2">
-            <div className="rounded-xl bg-white text-sm/7 text-gray-700 px-8 pt-8 pb-8">
-                <h3 className="text-2xl font-bold mb-4">Nuevo Dentista</h3>
-                <label className="mt-4" >Nombre</label>
-                <input type="text" className=" w-full border-2 mb-4 border-gray-300 rounded min-h-10" />
+        <Box
+            component="form"
+            onSubmit={handleSubmit}
+            noValidate
+            sx={{
+                width: '90%',
+                maxWidth: 600,
+                margin: '0 auto',
+                backgroundColor: 'white',
+                padding: 4,
+                borderRadius: 2,
+            }}
+        >
+            <Typography variant="h5" mb={3}>Nuevo Dentista</Typography>
 
-                <label className="mt-4" >Correo electronico</label>
-                <input type="email" className=" w-full border-2 border-gray-300 mb-4 rounded min-h-10" placeholder=" exampleuser@gmail.com" />
+            <TextField
+                label="Nombre"
+                fullWidth
+                margin="normal"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+            />
+            <TextField
+                label="Correo electrónico"
+                type="email"
+                fullWidth
+                margin="normal"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+                label="Contraseña"
+                type="password"
+                fullWidth
+                margin="normal"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+            />
+            <TextField
+                label="Teléfono"
+                type="number"
+                fullWidth
+                margin="normal"
+                value={telefono}
+                onChange={(e) => setTelefono(e.target.value)}
+            />
+            <TextField
+                select
+                label="Especialidad"
+                fullWidth
+                margin="normal"
+                required
+                value={especialidad}
+                onChange={(e) => setEspecialidad(e.target.value)}
+            >
+                <MenuItem value="Ortodoncia">Ortodoncia</MenuItem>
+                <MenuItem value="Limpieza">Limpieza</MenuItem>
+                <MenuItem value="Coronas">Coronas</MenuItem>
+                <MenuItem value="Reconstrucción">Reconstrucción</MenuItem>
+            </TextField>
 
-                <label className="mt-6" >Contraseña</label>
-                <input type="password" className="flex w-full rounded border-2 border-gray-300 min-h-10" />
-
-
-                <hr className="border-(--pattern-fg) my-6 w-full" />
-                <div className="flex ">
-                    <div className=" w-full flex">
-                        <div className="w-3/6">
-                            <label className="mt-4 " >Especialidad</label>
-                            <select className="rounded flex w-11/12 px-4 py-3 border-2 border-gray-300">
-                                <option hidden value="">Seleccione una</option>
-                                <option value="">Ortodoncia</option>
-                                <option value="">Limpieza</option>
-                                <option value="">Coronas</option>
-                                <option value="">Reconstrucción</option>
-                            </select>
-                        </div>
-                        <div className=" w-3/6 mx-auto">
-                            <label className="mt-4 " >Telefono</label>
-                            <input type="number" className="flex w-full rounded border-2 border-gray-300 py-1" />
-                        </div>
-                    </div>
-                </div>
-                <div className="w-3/6 text-center mx-auto"> 
-                    <button className="bg-cyan-600 py-2 mt-7 rounded w-3/6 text-white hover:bg-cyan-700">Agregar</button>
-
-                </div>
-            </div>
-        </div>
+            <Box textAlign="center" mt={4}>
+                <Button type="submit" variant="contained" color="primary">
+                    Agregar
+                </Button>
+            </Box>
+        </Box>
     );
 };
 
-export default Create_servicio;
+export default Create_dentista;
