@@ -20,6 +20,10 @@ npm install vite-plugin-pwa
 npm install @fullcalendar/core
 
 
+npm install dayjs
+
+
+
 
 npm install @fullcalendar/react @fullcalendar/core @fullcalendar/daygrid @fullcalendar/timegrid @fullcalendar/interaction
 
@@ -41,3 +45,4 @@ npm install -D eslint @types/react @types/react-dom
 
 Para correr el proyecto. Accede a la carpeta raiz del proyecto a traves de la terminal, y corre el comando:
 "npm run dev"
+
