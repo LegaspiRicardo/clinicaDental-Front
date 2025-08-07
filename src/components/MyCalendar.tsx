@@ -7,11 +7,30 @@ import interactionPlugin from '@fullcalendar/interaction';
 import esLocale from '@fullcalendar/core/locales/es';
 import { createEventId } from '../event-utils'; // Asegúrate de tener este archivo o función
 
+import { useEffect } from 'react';
+import axios from 'axios';
+import { Select, MenuItem } from '@mui/material';
 
 
 const MyCalendar = () => {
   const [currentEvents, setCurrentEvents] = useState<EventApi[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [dentistas, setDentistas] = useState([]);
+const [dentistaId, setDentistaId] = useState('');
+
+useEffect(() => {
+  const obtenerDentistas = async () => {
+    try {
+      const res = await axios.get('http://localhost:5000/api/users/dentistas');
+      setDentistas(res.data.filter((d: any) => d.status === 'Activo'));
+    } catch (error) {
+      console.error('Error al obtener dentistas:', error);
+    }
+  };
+  obtenerDentistas();
+}, []);
+
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
     const title = prompt('Escribe el título de la cita');
@@ -73,19 +92,20 @@ const MyCalendar = () => {
 
       <div className="main-wrapper">
         <div className="filters-bar">
-          <select className="filter-selects">
-            <option value="" hidden>Doctores y dentistas</option>
-            <option value="gomez">Dr. Gómez</option>
-            <option value="perez">Dra. Pérez</option>
-          </select>
+<Select
+  value={dentistaId}
+  onChange={(e) => setDentistaId(e.target.value)}
+  displayEmpty
+  sx={{ minWidth: 250, backgroundColor: 'white' }}
+>
+  <MenuItem value="" disabled>Doctores y dentistas</MenuItem>
+  {dentistas.map((d: any) => (
+    <MenuItem key={d.id} value={d.id}>
+      {d.username} - {d.especialidad}
+    </MenuItem>
+  ))}
+</Select>
 
-          <select className="filter-selects">
-            <option value="" hidden>Servicios</option>
-            <option value="general">Consulta general</option>
-            <option value="ortodoncia">Ortodoncia</option>
-            <option value="limpieza">Limpieza</option>
-            <option value="extraccion">Extracción</option>
-          </select>
 
           <input type="text" placeholder="Buscar paciente" className="filter-input" />
           <button className="filter-button">Filtrar</button>
