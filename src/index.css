@@ -25,3 +25,12 @@ body > div { /* the react root */
   background-color: rgba(0, 0, 0, 0.3); /* Color del thumb (la barra que se mueve) */
   border-radius: 8px;
 }
+
+.MuiMenuItem-root {
+  color: black !important;
+}
+
+.MuiPaper-root {
+  background-color: white !important;
+  color: black !important;
+}

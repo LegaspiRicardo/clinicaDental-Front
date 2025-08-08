@@ -1,41 +1,27 @@
 // src/pages/Horarios.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import esLocale from '@fullcalendar/core/locales/es';
-import type { DateSelectArg, EventClickArg, EventContentArg, EventApi } from '@fullcalendar/core';
-import axios from 'axios';
-
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  Select,
-  MenuItem,
-  TextField,
-  InputLabel,
-  FormControl,
-  Box,
-} from '@mui/material';
+import { MenuItem, Select } from '@mui/material';
+import FormularioHorario from '../components/forms/FormularioHorario';
 
 const Horarios = () => {
   const [dentistas, setDentistas] = useState<any[]>([]);
-  const [dentistaId, setDentistaId] = useState<string>('');
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [horaInicio, setHoraInicio] = useState('');
-  const [horaFin, setHoraFin] = useState('');
-  const [currentEvents, setCurrentEvents] = useState<EventApi[]>([]);
+  const [dentistaSeleccionado, setDentistaSeleccionado] = useState<string>('');
+  const [eventos, setEventos] = useState<any[]>([]);
+  const [dialogoAbierto, setDialogoAbierto] = useState(false);
+  const [fechaSeleccionada, setFechaSeleccionada] = useState('');
 
-  // Traer dentistas activos
   useEffect(() => {
     const fetchDentistas = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/users/dentistas');
+        const token = localStorage.getItem('token');
+        console.log('token (fetchDentistas):', token);
+        const res = await axios.get('http://localhost:5000/api/users/dentistas', {
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        });
         setDentistas(res.data.filter((d: any) => d.status === 'Activo'));
       } catch (error) {
         console.error('Error al cargar dentistas:', error);
@@ -44,175 +30,125 @@ const Horarios = () => {
     fetchDentistas();
   }, []);
 
-
-  //Actualiza el contenido cada que dentistaId cambie
-useEffect(() => {
-  const fetchHorarios = async () => {
-    if (!dentistaId) return;
+  const fetchHorarios = async (id: string) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/horario?dentistaId=${dentistaId}`);
-      const eventos = res.data.map((h: any) => ({
-        id: h.id.toString(),
-        title: `Horario`,
-        start: `${h.fecha}T${h.inicio}`,
-        end: `${h.fecha}T${h.fin}`,
+      const token = localStorage.getItem('token');
+      console.log('token (fetchHorarios):', token);
+      const res = await axios.get(`http://localhost:5000/api/horarios?dentistaId=${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+      });
+      const eventosFormateados = res.data.map((h: any) => ({
+        id: h.id,
+        title: `🕓 ${h.inicio} - ${h.fin}`,
+        start: h.fecha,
+        allDay: true,
+        color: '#1976d2',
+        textColor: '#fff',
       }));
-      setCurrentEvents(eventos);
-    } catch (error) {
+      setEventos(eventosFormateados);
+    } catch (error: any) {
       console.error('Error al cargar horarios:', error);
+      if (error?.response?.status === 401) {
+        alert('No autorizado. Revisa que haya token en localStorage (inicia sesión).');
+      }
     }
   };
-  fetchHorarios();
-}, [dentistaId]);
 
+  useEffect(() => {
+    if (dentistaSeleccionado) fetchHorarios(dentistaSeleccionado);
+    else setEventos([]);
+  }, [dentistaSeleccionado]);
 
-
-
-  // Al seleccionar día en el calendario
-  const handleDateSelect = (selectInfo: DateSelectArg) => {
-    if (!dentistaId) {
-      alert('Por favor, selecciona primero un dentista.');
+  const handleDateClick = (arg: any) => {
+    if (!dentistaSeleccionado) {
+      alert('Selecciona un dentista primero.');
       return;
     }
-    setSelectedDate(selectInfo.startStr.slice(0, 10)); // yyyy-mm-dd
-    setHoraInicio('');
-    setHoraFin('');
-    setDialogOpen(true);
+    setFechaSeleccionada(arg.dateStr);
+    setDialogoAbierto(true);
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-  };
 
-  // Guardar horario en BD
-const handleGuardarHorario = async () => {
-  if (!horaInicio || !horaFin) {
-    alert('Por favor ingresa hora de inicio y fin');
-    return;
-  }
-  if (horaInicio >= horaFin) {
-    alert('La hora de inicio debe ser menor a la hora fin');
-    return;
-  }
-
-  try {
-    const token = localStorage.getItem('token');
-    await axios.post(
-      'http://localhost:5000/api/horario',
-      {
-        id_dentista: dentistaId,
-        fecha: selectedDate,
-        inicio: horaInicio,
-        fin: horaFin,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    alert('Horario guardado correctamente');
-    setDialogOpen(false);
-  } catch (error) {
-    console.error('Error al guardar horario:', error);
-    alert('Error al guardar horario');
-  }
-};
-
-
-  const handleEventClick = (clickInfo: EventClickArg) => {
-    if (window.confirm(`¿Quieres eliminar el horario '${clickInfo.event.title}'?`)) {
-      clickInfo.event.remove();
-      // Aquí también puedes hacer llamada para eliminar en backend
-    }
-  };
-
-  const handleEvents = (events: EventApi[]) => {
-    setCurrentEvents(events);
-  };
-
-  const renderEventContent = (eventContent: EventContentArg) => (
-    <>
-      <b>{eventContent.timeText}</b> <i>{eventContent.event.title}</i>
-    </>
-  );
+  console.log('Dentistas cargados:', dentistas);
 
   return (
-    <Box className="demo-app container mx-auto p-8 rounded-md bg-cyan-800">
-      <Box className="main-wrapper">
-        <h2 className="text-white text-4xl mb-8">Horarios dentistas DENTAL - ART</h2>
+    <div className="container mx-auto p-6 bg-white shadow-md rounded-md">
+      <h2 className="text-xl font-bold mb-4">Gestión de Horarios</h2>
 
-        {/* Select dentista */}
-        <FormControl fullWidth sx={{ mb: 4, backgroundColor: 'white', borderRadius: 1 }}>
-          <InputLabel id="select-dentista-label">Selecciona un dentista</InputLabel>
-          <Select
-            labelId="select-dentista-label"
-            value={dentistaId}
-            label="Selecciona un dentista"
-            onChange={(e) => setDentistaId(e.target.value)}
-          >
-            {dentistas.map((d) => (
-              <MenuItem key={d.id} value={d.id}>
-                {d.username} - {d.especialidad}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      <div className="mb-6">
+<Select
+  fullWidth
+  displayEmpty
+  value={dentistaSeleccionado}
+  onChange={(e) => setDentistaSeleccionado(e.target.value)}
+  sx={{
+    color: 'black',
+    backgroundColor: 'white',
+    minWidth: 250,
+    fontSize: 16,
+    '& .MuiSelect-icon': {
+      color: 'black',
+    },
+    '& .MuiInputBase-input': {
+      color: 'black',
+    },
+  }}
+  MenuProps={{
+    PaperProps: {
+      sx: {
+        backgroundColor: 'white',
+        color: 'black',
+        minWidth: 250,
+      },
+    },
+    MenuListProps: {
+      sx: {
+        backgroundColor: 'white',
+        color: 'black',
+        '& .MuiMenuItem-root': {
+          color: 'black',
+          fontSize: 16,
+          minHeight: 40,
+        },
+      },
+    },
+  }}
+>
+  <MenuItem value="" disabled sx={{ color: 'gray' }}>
+    Selecciona un dentista
+  </MenuItem>
+  {dentistas.map((d) => (
+    <MenuItem
+      key={d.id}
+      value={d.id}
+      style={{ color: 'black' }} // <-- Aquí fuerzo inline color negro
+    >
+      {d.username} . ---- Especialidad: {d.especialidad}
+    </MenuItem>
+  ))}
+</Select>
 
-        {/* Calendario */}
-        <Box className="calendar-container bg-white p-8 rounded-lg">
-          <FullCalendar
-            locale={esLocale}
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay',
-            }}
-            initialView="dayGridMonth"
-            editable={false}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            select={handleDateSelect}
-            eventClick={handleEventClick}
-            eventsSet={handleEvents}
-            events={currentEvents}
-            eventContent={renderEventContent}
-          />
-        </Box>
 
-        {/* Dialog para ingresar hora inicio y fin */}
-        <Dialog open={dialogOpen} onClose={handleDialogClose}>
-          <DialogTitle>Agregar horario para {selectedDate}</DialogTitle>
-          <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-            <TextField
-              label="Hora inicio"
-              type="time"
-              value={horaInicio}
-              onChange={(e) => setHoraInicio(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ step: 300 }} // intervalos de 5 minutos
-            />
-            <TextField
-              label="Hora fin"
-              type="time"
-              value={horaFin}
-              onChange={(e) => setHoraFin(e.target.value)}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ step: 300 }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleDialogClose}>Cancelar</Button>
-            <Button onClick={handleGuardarHorario} variant="contained" color="primary">
-              Guardar
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Box>
-    </Box>
+      </div>
+
+      <FullCalendar
+        plugins={[dayGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        dateClick={handleDateClick}
+        events={eventos}
+        eventColor="#1976d2"
+        eventTextColor="#fff"
+        height="90vh"
+      />
+
+      <FormularioHorario
+        open={dialogoAbierto}
+        onClose={() => setDialogoAbierto(false)}
+        fecha={fechaSeleccionada}
+        dentistaId={dentistaSeleccionado}
+        onHorarioGuardado={() => fetchHorarios(dentistaSeleccionado)}
+      />
+    </div>
   );
 };
 
