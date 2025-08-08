@@ -6,6 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { MenuItem, Select } from '@mui/material';
 import FormularioHorario from '../components/forms/FormularioHorario';
+import FormularioEliminarHorario from '../components/forms/FormularioEliminarHorario';
 
 const Horarios = () => {
   const [dentistas, setDentistas] = useState<any[]>([]);
@@ -13,6 +14,8 @@ const Horarios = () => {
   const [eventos, setEventos] = useState<any[]>([]);
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
   const [fechaSeleccionada, setFechaSeleccionada] = useState('');
+  const [horarioSeleccionado, setHorarioSeleccionado] = useState<any | null>(null);
+  const [dialogoEliminarAbierto, setDialogoEliminarAbierto] = useState(false);
 
   useEffect(() => {
     const fetchDentistas = async () => {
@@ -20,7 +23,7 @@ const Horarios = () => {
         const token = localStorage.getItem('token');
         console.log('token (fetchDentistas):', token);
         const res = await axios.get('http://localhost:5000/api/users/dentistas', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
         setDentistas(res.data.filter((d: any) => d.status === 'Activo'));
       } catch (error) {
@@ -35,7 +38,7 @@ const Horarios = () => {
       const token = localStorage.getItem('token');
       console.log('token (fetchHorarios):', token);
       const res = await axios.get(`http://localhost:5000/api/horarios?dentistaId=${id}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
       const eventosFormateados = res.data.map((h: any) => ({
         id: h.id,
@@ -68,6 +71,15 @@ const Horarios = () => {
     setDialogoAbierto(true);
   };
 
+  const handleEventClick = (clickInfo: any) => {
+    setHorarioSeleccionado({
+      id: clickInfo.event.id,
+      title: clickInfo.event.title,
+      start: clickInfo.event.start,
+      startStr: clickInfo.event.startStr,
+    });
+    setDialogoEliminarAbierto(true);
+  };
 
   console.log('Dentistas cargados:', dentistas);
 
@@ -76,65 +88,60 @@ const Horarios = () => {
       <h2 className="text-xl font-bold mb-4">Gestión de Horarios</h2>
 
       <div className="mb-6">
-<Select
-  fullWidth
-  displayEmpty
-  value={dentistaSeleccionado}
-  onChange={(e) => setDentistaSeleccionado(e.target.value)}
-  sx={{
-    color: 'black',
-    backgroundColor: 'white',
-    minWidth: 250,
-    fontSize: 16,
-    '& .MuiSelect-icon': {
-      color: 'black',
-    },
-    '& .MuiInputBase-input': {
-      color: 'black',
-    },
-  }}
-  MenuProps={{
-    PaperProps: {
-      sx: {
-        backgroundColor: 'white',
-        color: 'black',
-        minWidth: 250,
-      },
-    },
-    MenuListProps: {
-      sx: {
-        backgroundColor: 'white',
-        color: 'black',
-        '& .MuiMenuItem-root': {
-          color: 'black',
-          fontSize: 16,
-          minHeight: 40,
-        },
-      },
-    },
-  }}
->
-  <MenuItem value="" disabled sx={{ color: 'gray' }}>
-    Selecciona un dentista
-  </MenuItem>
-  {dentistas.map((d) => (
-    <MenuItem
-      key={d.id}
-      value={d.id}
-      style={{ color: 'black' }} // <-- Aquí fuerzo inline color negro
-    >
-      {d.username} . ---- Especialidad: {d.especialidad}
-    </MenuItem>
-  ))}
-</Select>
-
-
+        <Select
+          fullWidth
+          displayEmpty
+          value={dentistaSeleccionado}
+          onChange={(e) => setDentistaSeleccionado(e.target.value)}
+          sx={{
+            color: 'black',
+            backgroundColor: 'white',
+            minWidth: 250,
+            fontSize: 16,
+            '& .MuiSelect-icon': {
+              color: 'black',
+            },
+            '& .MuiInputBase-input': {
+              color: 'black',
+            },
+          }}
+          MenuProps={{
+            PaperProps: {
+              sx: {
+                backgroundColor: 'white',
+                color: 'black',
+                minWidth: 250,
+              },
+            },
+            MenuListProps: {
+              sx: {
+                backgroundColor: 'white',
+                color: 'black',
+                '& .MuiMenuItem-root': {
+                  color: 'black',
+                  fontSize: 16,
+                  minHeight: 40,
+                },
+              },
+            },
+          }}
+        >
+          <MenuItem value="" disabled sx={{ color: 'gray' }}>
+            Selecciona un dentista
+          </MenuItem>
+          {dentistas.map((d) => (
+            <MenuItem key={d.id} value={d.id} style={{ color: 'black' }}>
+              {d.username} {d.especialidad}
+            </MenuItem>
+          ))}
+        </Select>
       </div>
 
       <FullCalendar
         plugins={[dayGridPlugin, interactionPlugin]}
         initialView="dayGridMonth"
         dateClick={handleDateClick}
+        eventClick={handleEventClick}
         events={eventos}
         eventColor="#1976d2"
         eventTextColor="#fff"
@@ -147,6 +154,13 @@ const Horarios = () => {
         fecha={fechaSeleccionada}
         dentistaId={dentistaSeleccionado}
         onHorarioGuardado={() => fetchHorarios(dentistaSeleccionado)}
+      />
+
+      <FormularioEliminarHorario
+        open={dialogoEliminarAbierto}
+        onClose={() => setDialogoEliminarAbierto(false)}
+        horario={horarioSeleccionado}
+        onEliminarExitoso={() => fetchHorarios(dentistaSeleccionado)}
       />
     </div>
   );
