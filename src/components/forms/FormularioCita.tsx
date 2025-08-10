@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -14,210 +14,208 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
-interface Props {
+interface FormularioCitaProps {
     open: boolean;
     onClose: () => void;
     fecha: string;
     dentistaId: string;
-    inicioHorario?: string;  // Ejemplo: "14:00"
-    finHorario?: string;     // Ejemplo: "15:00"
-    idHorario?: number | string; // id del horario seleccionado
+    inicioHorario: string;
+    finHorario: string;
+    idHorario: string;
     onCitaGuardada: () => void;
 }
 
-const FormularioCita: React.FC<Props> = ({
+interface Servicio {
+    id: string;
+    nombre: string;
+}
+
+interface Paciente {
+    id: string;
+    nombre: string;
+}
+
+const FormularioCita = ({
     open,
     onClose,
     fecha,
     dentistaId,
-    onCitaGuardada,
     inicioHorario,
     finHorario,
     idHorario,
-}) => {
-    const [inicio, setInicio] = useState('');
-    const [fin, setFin] = useState('');
-    const [pacientes, setPacientes] = useState<any[]>([]);
-    const [servicios, setServicios] = useState<any[]>([]);
-    const [pacienteId, setPacienteId] = useState('');
-    const [servicioId, setServicioId] = useState('');
-    const [loading, setLoading] = useState(false);
+    onCitaGuardada,
+}: FormularioCitaProps) => {
+    const [pacientes, setPacientes] = useState<Paciente[]>([]);
+    const [servicios, setServicios] = useState<Servicio[]>([]);
+
+    const [pacienteSeleccionado, setPacienteSeleccionado] = useState('');
+    const [servicioSeleccionado, setServicioSeleccionado] = useState('');
+    const [descripcion, setDescripcion] = useState('');
+    const [status, setStatus] = useState('Pendiente');
+    const [cargando, setCargando] = useState(false);
 
     useEffect(() => {
-        if (!open) return;
+        if (open) {
+            const fetchPacientes = async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    const resPacientes = await axios.get('http://localhost:5000/api/users/pacientes', {
+                        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                    });
+                    setPacientes(resPacientes.data);
+                } catch (error) {
+                    console.error('Error cargando pacientes:', error);
+                }
+            };
 
-        // Cargar pacientes activos
-        const fetchPacientes = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const res = await axios.get('http://localhost:5000/api/users/pacientes', {
-                    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-                });
-                const activos = res.data.filter((p: any) => p.status.toLowerCase() === 'activo');
-                setPacientes(activos);
-            } catch (error) {
-                console.error('Error al cargar pacientes:', error);
-            }
-        };
+            const fetchServicios = async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    const resServicios = await axios.get('http://localhost:5000/api/servicios', {
+                        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                    });
+                    setServicios(resServicios.data);
+                } catch (error) {
+                    console.error('Error cargando servicios:', error);
+                }
+            };
 
-        // Cargar servicios
-        const fetchServicios = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const res = await axios.get('http://localhost:5000/api/servicios', {
-                    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-                });
-                setServicios(res.data);
-            } catch (error) {
-                console.error('Error al cargar servicios:', error);
-            }
-        };
-
-        fetchPacientes();
-        fetchServicios();
-
-        // Inicializar horas con las props si existen
-        if (inicioHorario && finHorario) {
-            setInicio(inicioHorario);
-            setFin(finHorario);
-        } else {
-            setInicio('');
-            setFin('');
+            fetchPacientes();
+            fetchServicios();
         }
-
-        // Limpiar selección paciente y servicio
-        setPacienteId('');
-        setServicioId('');
-    }, [open, inicioHorario, finHorario]);
+    }, [open]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setCargando(true);
 
-        if (!inicio || !fin || !pacienteId || !servicioId) {
-            alert('Completa todos los campos.');
-            return;
-        }
-
-        if (inicio >= fin) {
-            alert('La hora de inicio debe ser menor que la hora de fin.');
-            return;
-        }
-
-        if (!idHorario) {
-            alert('Debes seleccionar un horario válido.');
-            return;
-        }
-
-        setLoading(true);
         try {
+            const token = localStorage.getItem('token');
+
             await axios.post(
                 'http://localhost:5000/api/citas',
                 {
-                    fecha,
-                    inicio,
-                    fin,
-                    id_dentista: dentistaId,
-                    id_paciente: pacienteId,
-                    id_servicio: servicioId,
-                    description: '',
-                    status: 'Pendiente',
                     id_horario: idHorario,
+                    id_dentista: dentistaId,
+                    id_paciente: pacienteSeleccionado,
+                    id_servicio: servicioSeleccionado,
+                    fecha,
+                    inicio: inicioHorario,
+                    fin: finHorario,
+                    description: descripcion,
+                    status,
                 },
-                {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-                }
+                { headers: token ? { Authorization: `Bearer ${token}` } : undefined }
             );
 
-            alert('Cita agendada con éxito');
+            alert('Cita creada con éxito');
             onCitaGuardada();
-            onClose();
+            setPacienteSeleccionado('');
+            setServicioSeleccionado('');
+            setDescripcion('');
+            setStatus('Pendiente');
         } catch (error) {
-            console.error('Error al guardar cita:', error);
-            alert('Error al guardar la cita');
+            console.error('Error creando cita:', error);
+            alert('Error creando cita');
         } finally {
-            setLoading(false);
+            setCargando(false);
         }
     };
 
     return (
-        <Dialog
-            open={open}
-            onClose={() => {
-                if (!loading) onClose();
-            }}
-            PaperProps={{ sx: { backgroundColor: 'white', color: 'black', minWidth: 350 } }}
-        >
-            <form onSubmit={handleSubmit}>
-                <DialogTitle>Agendar cita para {fecha}</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        label="Hora de inicio"
-                        type="time"
-                        value={inicio}
-                        onChange={(e) => setInicio(e.target.value)}
-                        InputLabelProps={{ shrink: true }}
-                        sx={{ mt: 2 }}
-                        required
-                        disabled={loading || Boolean(inicioHorario)}
-                    />
-                    <TextField
-                        fullWidth
-                        label="Hora de fin"
-                        type="time"
-                        value={fin}
-                        onChange={(e) => setFin(e.target.value)}
-                        InputLabelProps={{ shrink: true }}
-                        sx={{ mt: 2 }}
-                        required
-                        disabled={loading || Boolean(finHorario)}
-                    />
-                    <FormControl fullWidth sx={{ mt: 2 }}>
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+            <DialogTitle>Crear nueva cita</DialogTitle>
+            <DialogContent dividers>
+                <form onSubmit={handleSubmit} id="form-cita">
+                    <FormControl fullWidth margin="normal">
                         <InputLabel id="paciente-label">Paciente</InputLabel>
                         <Select
                             labelId="paciente-label"
-                            value={pacienteId}
-                            label="Paciente"
-                            onChange={(e) => setPacienteId(e.target.value)}
+                            value={pacienteSeleccionado}
+                            onChange={(e) => setPacienteSeleccionado(e.target.value)}
                             required
-                            disabled={loading}
                         >
-                            {pacientes.length === 0 && <MenuItem disabled>No hay pacientes activos</MenuItem>}
                             {pacientes.map((p) => (
                                 <MenuItem key={p.id} value={p.id}>
-                                    {p.username} {p.apellido || ''}
+                                    {p.username}
                                 </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
-                    <FormControl fullWidth sx={{ mt: 2 }}>
+
+                    <FormControl fullWidth margin="normal">
                         <InputLabel id="servicio-label">Servicio</InputLabel>
                         <Select
                             labelId="servicio-label"
-                            value={servicioId}
-                            label="Servicio"
-                            onChange={(e) => setServicioId(e.target.value)}
+                            value={servicioSeleccionado}
+                            onChange={(e) => setServicioSeleccionado(e.target.value)}
                             required
-                            disabled={loading}
                         >
-                            {servicios.length === 0 && <MenuItem disabled>No hay servicios</MenuItem>}
                             {servicios.map((s) => (
                                 <MenuItem key={s.id} value={s.id}>
-                                    {s.nombre || s.name}
+                                    {s.name}
                                 </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={onClose} disabled={loading}>
-                        Cancelar
-                    </Button>
-                    <Button type="submit" variant="contained" disabled={loading}>
-                        {loading ? <CircularProgress size={24} color="inherit" /> : 'Agendar'}
-                    </Button>
-                </DialogActions>
-            </form>
+
+                    <TextField
+                        margin="normal"
+                        label="Descripción"
+                        multiline
+                        rows={3}
+                        fullWidth
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
+                    />
+
+                    <TextField
+                        margin="normal"
+                        label="Fecha"
+                        fullWidth
+                        disabled
+                        value={fecha}
+                    />
+
+                    <TextField
+                        margin="normal"
+                        label="Inicio"
+                        fullWidth
+                        disabled
+                        value={inicioHorario}
+                    />
+
+                    <TextField
+                        margin="normal"
+                        label="Fin"
+                        fullWidth
+                        disabled
+                        value={finHorario}
+                    />
+
+                    <FormControl fullWidth margin="normal">
+                        <InputLabel id="status-label">Estado</InputLabel>
+                        <Select
+                            labelId="status-label"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                            required
+                        >
+                            <MenuItem value="Pendiente">Pendiente</MenuItem>
+                            <MenuItem value="Confirmada">Confirmada</MenuItem>
+                            <MenuItem value="Cancelada">Cancelada</MenuItem>
+                        </Select>
+                    </FormControl>
+                </form>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose} disabled={cargando}>
+                    Cancelar
+                </Button>
+                <Button type="submit" form="form-cita" variant="contained" disabled={cargando}>
+                    {cargando ? 'Guardando...' : 'Guardar'}
+                </Button>
+            </DialogActions>
         </Dialog>
     );
 };
