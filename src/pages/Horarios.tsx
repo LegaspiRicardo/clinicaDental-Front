@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid'; // <-- para vista por horas
 import interactionPlugin from '@fullcalendar/interaction';
 import { MenuItem, Select } from '@mui/material';
 import FormularioHorario from '../components/forms/FormularioHorario';
@@ -21,7 +22,6 @@ const Horarios = () => {
     const fetchDentistas = async () => {
       try {
         const token = localStorage.getItem('token');
-        console.log('token (fetchDentistas):', token);
         const res = await axios.get('http://localhost:5000/api/users/dentistas', {
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
@@ -33,29 +33,35 @@ const Horarios = () => {
     fetchDentistas();
   }, []);
 
-  const fetchHorarios = async (id: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      console.log('token (fetchHorarios):', token);
-      const res = await axios.get(`http://localhost:5000/api/horarios?dentistaId=${id}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      const eventosFormateados = res.data.map((h: any) => ({
+const fetchHorarios = async (id: string) => {
+  try {
+    const token = localStorage.getItem('token');
+    const res = await axios.get(`http://localhost:5000/api/horarios?dentistaId=${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+
+    console.log('Horarios recibidos:', res.data);
+
+    const eventosFormateados = res.data.map((h: any) => {
+      const fechaLocal = h.fecha.slice(0, 10); // yyyy-mm-dd
+      const start = `${fechaLocal}T${h.inicio}`;
+      const end = `${fechaLocal}T${h.fin}`;
+      return {
         id: h.id,
         title: `🕓 ${h.inicio} - ${h.fin}`,
-        start: h.fecha,
-        allDay: true,
+        start,
+        end,
+        allDay: false,
         color: '#1976d2',
         textColor: '#fff',
-      }));
-      setEventos(eventosFormateados);
-    } catch (error: any) {
-      console.error('Error al cargar horarios:', error);
-      if (error?.response?.status === 401) {
-        alert('No autorizado. Revisa que haya token en localStorage (inicia sesión).');
-      }
-    }
-  };
+      };
+    });
+
+    setEventos(eventosFormateados);
+  } catch (error: any) {
+    console.error('Error al cargar horarios:', error);
+  }
+};
 
   useEffect(() => {
     if (dentistaSeleccionado) fetchHorarios(dentistaSeleccionado);
@@ -77,11 +83,10 @@ const Horarios = () => {
       title: clickInfo.event.title,
       start: clickInfo.event.start,
       startStr: clickInfo.event.startStr,
+      end: clickInfo.event.end,
     });
     setDialogoEliminarAbierto(true);
   };
-
-  console.log('Dentistas cargados:', dentistas);
 
   return (
     <div className="container mx-auto p-6 bg-white shadow-md rounded-md">
@@ -138,14 +143,21 @@ const Horarios = () => {
       </div>
 
       <FullCalendar
-        plugins={[dayGridPlugin, interactionPlugin]}
-        initialView="dayGridMonth"
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="timeGridWeek" // Puedes cambiar a timeGridDay o dayGridMonth si quieres
+        headerToolbar={{
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay',
+        }}
         dateClick={handleDateClick}
         eventClick={handleEventClick}
         events={eventos}
         eventColor="#1976d2"
         eventTextColor="#fff"
         height="90vh"
+        slotMinTime="07:00:00" // hora mínima visible (opcional)
+        slotMaxTime="21:00:00" // hora máxima visible (opcional)
       />
 
       <FormularioHorario
