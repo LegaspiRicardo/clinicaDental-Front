@@ -337,23 +337,26 @@ const citaOcupante = citas.find((c: any) => {
             color="error"
             variant="contained"
             disabled={loadingEliminar}
-            onClick={async () => {
-              if (!citaSeleccionada) return;
-              setLoadingEliminar(true);
-              try {
-                const token = localStorage.getItem('token');
-                await axios.delete(`http://localhost:5000/api/citas/${citaSeleccionada.id}`, {
-                  headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-                });
-                alert('Cita eliminada correctamente');
-                setDialogoCitaAbierto(false);
-                cargarEventos(dentistaSeleccionado);
-              } catch (error) {
-                alert('Error al eliminar cita');
-              } finally {
-                setLoadingEliminar(false);
-              }
-            }}
+onClick={async () => {
+  if (!citaSeleccionada) return;
+  setLoadingEliminar(true);
+  try {
+    const token = localStorage.getItem('token');
+    console.log('Eliminar cita ID:', citaSeleccionada.id, 'Token:', token);
+    await axios.delete(`http://localhost:5000/api/citas/${citaSeleccionada.id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
+    alert('Cita eliminada correctamente');
+    setDialogoCitaAbierto(false);
+    cargarEventos(dentistaSeleccionado);
+  } catch (error) {
+    console.error(error);
+    alert('Error al eliminar cita');
+  } finally {
+    setLoadingEliminar(false);
+  }
+}}
+
           >
             Eliminar cita
           </Button>
