@@ -42,7 +42,13 @@ npm install -D eslint @types/react @types/react-dom
 
 
 
+*-------*
+npm install jwt-decode
+
+
+
 
 Para correr el proyecto. Accede a la carpeta raiz del proyecto a traves de la terminal, y corre el comando:
 "npm run dev"
+
 
