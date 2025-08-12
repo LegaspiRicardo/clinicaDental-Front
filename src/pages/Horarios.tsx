@@ -3,69 +3,105 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid'; // <-- para vista por horas
+import timeGridPlugin from '@fullcalendar/timegrid'; // para vista por horas
 import interactionPlugin from '@fullcalendar/interaction';
 import { MenuItem, Select } from '@mui/material';
+import { jwtDecode } from 'jwt-decode';
 import FormularioHorario from '../components/forms/FormularioHorario';
 import FormularioEliminarHorario from '../components/forms/FormularioEliminarHorario';
 
+type TokenPayload = {
+  id: string;
+  email: string;
+  rol: string;
+};
+
 const Horarios = () => {
+  const token = localStorage.getItem('token');
+  const decoded: TokenPayload | null = token ? jwtDecode(token) : null;
+
+  // Estado si es dentista
+  const isDentista = decoded?.rol.toLowerCase() === 'dentista';
+
+  // Estados para dentistas y nombre dentista logueado
   const [dentistas, setDentistas] = useState<any[]>([]);
-  const [dentistaSeleccionado, setDentistaSeleccionado] = useState<string>('');
+  const [dentistaSeleccionado, setDentistaSeleccionado] = useState<string>(isDentista ? (decoded?.id ?? '') : '');
+  const [nombreDentista, setNombreDentista] = useState<string>('');
+
   const [eventos, setEventos] = useState<any[]>([]);
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
   const [fechaSeleccionada, setFechaSeleccionada] = useState('');
   const [horarioSeleccionado, setHorarioSeleccionado] = useState<any | null>(null);
   const [dialogoEliminarAbierto, setDialogoEliminarAbierto] = useState(false);
 
+  // Cargar dentistas para select SOLO si NO es dentista
   useEffect(() => {
-    const fetchDentistas = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/users/dentistas', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-        setDentistas(res.data.filter((d: any) => d.status === 'Activo'));
-      } catch (error) {
-        console.error('Error al cargar dentistas:', error);
-      }
-    };
-    fetchDentistas();
-  }, []);
-
-const fetchHorarios = async (id: string) => {
-  try {
-    const token = localStorage.getItem('token');
-    const res = await axios.get(`http://localhost:5000/api/horarios?dentistaId=${id}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
-
-    console.log('Horarios recibidos:', res.data);
-
-    const eventosFormateados = res.data.map((h: any) => {
-      const fechaLocal = h.fecha.slice(0, 10); // yyyy-mm-dd
-      const start = `${fechaLocal}T${h.inicio}`;
-      const end = `${fechaLocal}T${h.fin}`;
-      return {
-        id: h.id,
-        title: `🕓 ${h.inicio} - ${h.fin}`,
-        start,
-        end,
-        allDay: false,
-        color: '#1976d2',
-        textColor: '#fff',
+    if (!isDentista) {
+      const fetchDentistas = async () => {
+        try {
+          if (!token) return;
+          const res = await axios.get('http://localhost:5000/api/users/dentistas', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setDentistas(res.data.filter((d: any) => d.status === 'Activo'));
+        } catch (error) {
+          console.error('Error al cargar dentistas:', error);
+        }
       };
-    });
+      fetchDentistas();
+    }
+  }, [isDentista, token]);
 
-    setEventos(eventosFormateados);
-  } catch (error: any) {
-    console.error('Error al cargar horarios:', error);
-  }
-};
-
+  // Obtener nombre dentista logueado SI es dentista
   useEffect(() => {
-    if (dentistaSeleccionado) fetchHorarios(dentistaSeleccionado);
-    else setEventos([]);
+    if (isDentista && decoded?.id && token) {
+      const fetchNombreDentista = async () => {
+        try {
+          const res = await axios.get(`http://localhost:5000/api/users/${decoded.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setNombreDentista(res.data.username || res.data.nombre || decoded.email);
+        } catch (error) {
+          console.error('Error al obtener nombre dentista:', error);
+          setNombreDentista(decoded.email); // fallback
+        }
+      };
+      fetchNombreDentista();
+    }
+  }, [isDentista, decoded, token]);
+
+  // Función para cargar horarios del dentista seleccionado
+  const fetchHorarios = async (id: string) => {
+    try {
+      if (!token) return;
+      const res = await axios.get(`http://localhost:5000/api/horarios?dentistaId=${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const eventosFormateados = res.data.map((h: any) => {
+        const fechaLocal = h.fecha.slice(0, 10); // yyyy-mm-dd
+        return {
+          id: h.id,
+          title: `🕓 ${h.inicio} - ${h.fin}`,
+          start: `${fechaLocal}T${h.inicio}`,
+          end: `${fechaLocal}T${h.fin}`,
+          allDay: false,
+          color: '#1976d2',
+          textColor: '#fff',
+        };
+      });
+      setEventos(eventosFormateados);
+    } catch (error) {
+      console.error('Error al cargar horarios:', error);
+    }
+  };
+
+  // Cargar horarios al cambiar dentista seleccionado (o al iniciar si dentista)
+  useEffect(() => {
+    if (dentistaSeleccionado) {
+      fetchHorarios(dentistaSeleccionado);
+    } else {
+      setEventos([]);
+    }
   }, [dentistaSeleccionado]);
 
   const handleDateClick = (arg: any) => {
@@ -93,53 +129,70 @@ const fetchHorarios = async (id: string) => {
       <h2 className="text-xl font-bold mb-4">Gestión de Horarios</h2>
 
       <div className="mb-6">
-        <Select
-          fullWidth
-          displayEmpty
-          value={dentistaSeleccionado}
-          onChange={(e) => setDentistaSeleccionado(e.target.value)}
-          sx={{
-            color: 'black',
-            backgroundColor: 'white',
-            minWidth: 250,
-            fontSize: 16,
-            '& .MuiSelect-icon': {
+        {isDentista ? (
+          <div
+            style={{
               color: 'black',
-            },
-            '& .MuiInputBase-input': {
+              fontWeight: 'bold',
+              minWidth: 250,
+              fontSize: 16,
+              padding: '8px',
+              backgroundColor: '#f0f0f0',
+              borderRadius: '4px',
+              userSelect: 'none',
+            }}
+          >
+            {nombreDentista || 'Dentista'}
+          </div>
+        ) : (
+          <Select
+            fullWidth
+            displayEmpty
+            value={dentistaSeleccionado}
+            onChange={(e) => setDentistaSeleccionado(e.target.value)}
+            sx={{
               color: 'black',
-            },
-          }}
-          MenuProps={{
-            PaperProps: {
-              sx: {
-                backgroundColor: 'white',
+              backgroundColor: 'white',
+              minWidth: 250,
+              fontSize: 16,
+              '& .MuiSelect-icon': {
                 color: 'black',
-                minWidth: 250,
               },
-            },
-            MenuListProps: {
-              sx: {
-                backgroundColor: 'white',
+              '& .MuiInputBase-input': {
                 color: 'black',
-                '& .MuiMenuItem-root': {
+              },
+            }}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  backgroundColor: 'white',
                   color: 'black',
-                  fontSize: 16,
-                  minHeight: 40,
+                  minWidth: 250,
                 },
               },
-            },
-          }}
-        >
-          <MenuItem value="" disabled sx={{ color: 'gray' }}>
-            Selecciona un dentista
-          </MenuItem>
-          {dentistas.map((d) => (
-            <MenuItem key={d.id} value={d.id} style={{ color: 'black' }}>
-              {d.username} {d.especialidad}
+              MenuListProps: {
+                sx: {
+                  backgroundColor: 'white',
+                  color: 'black',
+                  '& .MuiMenuItem-root': {
+                    color: 'black',
+                    fontSize: 16,
+                    minHeight: 40,
+                  },
+                },
+              },
+            }}
+          >
+            <MenuItem value="" disabled sx={{ color: 'gray' }}>
+              Selecciona un dentista
             </MenuItem>
-          ))}
-        </Select>
+            {dentistas.map((d) => (
+              <MenuItem key={d.id} value={d.id} style={{ color: 'black' }}>
+                {d.username} {d.especialidad}
+              </MenuItem>
+            ))}
+          </Select>
+        )}
       </div>
 
       <FullCalendar

@@ -1,3 +1,4 @@
+// src/pages/Citas.tsx
 import React, { useEffect, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -16,6 +17,7 @@ import {
   Button,
 } from '@mui/material';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
 import FormularioCita from '../components/forms/FormularioCita';
 
 interface Dentista {
@@ -37,9 +39,19 @@ interface Evento {
   priority: number;
 }
 
+type TokenPayload = {
+  id: string;
+  email: string;
+  rol: string;
+};
+
 const Citas = () => {
+  const token = localStorage.getItem('token');
+  const decoded: TokenPayload | null = token ? jwtDecode(token) : null;
+  const isDentista = decoded?.rol.toLowerCase() === 'dentista';
+
   const [dentistas, setDentistas] = useState<Dentista[]>([]);
-  const [dentistaSeleccionado, setDentistaSeleccionado] = useState<string>('');
+  const [dentistaSeleccionado, setDentistaSeleccionado] = useState<string>(isDentista ? (decoded?.id ?? '') : '');
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [dialogoAbierto, setDialogoAbierto] = useState(false);
   const [fechaSeleccionada, setFechaSeleccionada] = useState<string>('');
@@ -50,43 +62,59 @@ const Citas = () => {
   const [dialogoCitaAbierto, setDialogoCitaAbierto] = useState(false);
   const [loadingEliminar, setLoadingEliminar] = useState(false);
 
+  // Para mostrar nombre dentista logueado si es dentista
+  const [nombreDentista, setNombreDentista] = useState<string>('');
+
+  // Cargar dentistas SOLO si NO es dentista
   useEffect(() => {
-    const fetchDentistas = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/users/dentistas', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        });
-        setDentistas(res.data.filter((d: Dentista) => d.status === 'Activo'));
-      } catch (error) {
-        console.error('Error al cargar dentistas:', error);
-      }
-    };
-    fetchDentistas();
-  }, []);
+    if (!isDentista) {
+      const fetchDentistas = async () => {
+        try {
+          if (!token) return;
+          const res = await axios.get('http://localhost:5000/api/users/dentistas', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setDentistas(res.data.filter((d: Dentista) => d.status === 'Activo'));
+        } catch (error) {
+          console.error('Error al cargar dentistas:', error);
+        }
+      };
+      fetchDentistas();
+    }
+  }, [isDentista, token]);
 
-  const toLocalDateString = (fechaISO: string) => {
-    const d = new Date(fechaISO);
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+  // Obtener nombre dentista logueado SI es dentista
+  useEffect(() => {
+    if (isDentista && decoded?.id && token) {
+      const fetchNombreDentista = async () => {
+        try {
+          const res = await axios.get(`http://localhost:5000/api/users/${decoded.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setNombreDentista(res.data.username || decoded.email);
+        } catch (error) {
+          console.error('Error al obtener nombre dentista:', error);
+          setNombreDentista(decoded.email); // fallback
+        }
+      };
+      fetchNombreDentista();
+    }
+  }, [isDentista, decoded, token]);
 
+  // Función para cargar horarios y citas y armar eventos
   const fetchHorariosFragmentados = async (dentistaId: string) => {
     try {
       setCargando(true);
-      const token = localStorage.getItem('token');
+      if (!token) return [];
       const resHorarios = await axios.get(`http://localhost:5000/api/horarios?dentistaId=${dentistaId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const resCitas = await axios.get(`http://localhost:5000/api/citas?dentistaId=${dentistaId}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const citas = resCitas.data;
-
       const bloques: Evento[] = [];
 
       for (const h of resHorarios.data) {
@@ -101,39 +129,27 @@ const Citas = () => {
           bloqueFin.setHours(bloqueInicio.getHours() + 1);
           if (bloqueFin > finDate) bloqueFin.setTime(finDate.getTime());
 
-const citaOcupante = citas.find((c: any) => {
-  // Sacamos el ID de horario sin importar cómo venga
-  const idHorarioCita = c.id_horario ?? c.idHorario ?? c?.horario?.id;
+          const citaOcupante = citas.find((c: any) => {
+            const idHorarioCita = c.id_horario ?? c.idHorario ?? c?.horario?.id;
 
-  // Parseamos horas
-  const [horaInicioC, minInicioC] = c.inicio.split(":").map(Number);
-  const [horaFinC, minFinC] = c.fin.split(":").map(Number);
+            const [horaInicioC, minInicioC] = c.inicio.split(":").map(Number);
+            const [horaFinC, minFinC] = c.fin.split(":").map(Number);
 
-  const inicioCita = new Date(bloqueInicio);
-  inicioCita.setHours(horaInicioC, minInicioC, 0, 0);
+            const inicioCita = new Date(bloqueInicio);
+            inicioCita.setHours(horaInicioC, minInicioC, 0, 0);
 
-  const finCita = new Date(bloqueInicio);
-  finCita.setHours(horaFinC, minFinC, 0, 0);
+            const finCita = new Date(bloqueInicio);
+            finCita.setHours(horaFinC, minFinC, 0, 0);
 
-  const inicioBloque = new Date(bloqueInicio);
-  const finBloque = new Date(bloqueFin);
+            const inicioBloque = new Date(bloqueInicio);
+            const finBloque = new Date(bloqueFin);
 
-  console.log("Comparando:", {
-    idHorarioCita,
-    id_horario_bloque: h.id,
-    inicio_cita: inicioCita.toTimeString().slice(0, 5),
-    fin_cita: finCita.toTimeString().slice(0, 5),
-    inicio_bloque: inicioBloque.toTimeString().slice(0, 5),
-    fin_bloque: finBloque.toTimeString().slice(0, 5),
-  });
-
-  return (
-    String(idHorarioCita) === String(h.id) &&
-    inicioBloque >= inicioCita &&
-    finBloque <= finCita
-  );
-});
-
+            return (
+              String(idHorarioCita) === String(h.id) &&
+              inicioBloque >= inicioCita &&
+              finBloque <= finCita
+            );
+          });
 
           if (citaOcupante) {
             bloques.push({
@@ -242,22 +258,41 @@ const citaOcupante = citas.find((c: any) => {
         Gestión de Citas
       </Typography>
 
-      <Select
-        fullWidth
-        displayEmpty
-        value={dentistaSeleccionado}
-        onChange={(e) => setDentistaSeleccionado(e.target.value)}
-        sx={{ mb: 4 }}
-      >
-        <MenuItem value="" disabled>
-          Selecciona un dentista
-        </MenuItem>
-        {dentistas.map((d) => (
-          <MenuItem key={d.id} value={d.id}>
-            {d.username} — {d.especialidad}
-          </MenuItem>
-        ))}
-      </Select>
+      <div className="mb-4">
+        {isDentista ? (
+          <div
+            style={{
+              color: 'black',
+              fontWeight: 'bold',
+              minWidth: 250,
+              fontSize: 16,
+              padding: '8px',
+              backgroundColor: '#f0f0f0',
+              borderRadius: '4px',
+              userSelect: 'none',
+            }}
+          >
+            {nombreDentista || 'Dentista'}
+          </div>
+        ) : (
+          <Select
+            fullWidth
+            displayEmpty
+            value={dentistaSeleccionado}
+            onChange={(e) => setDentistaSeleccionado(e.target.value)}
+            sx={{ mb: 4 }}
+          >
+            <MenuItem value="" disabled>
+              Selecciona un dentista
+            </MenuItem>
+            {dentistas.map((d) => (
+              <MenuItem key={d.id} value={d.id}>
+                {d.username} — {d.especialidad}
+              </MenuItem>
+            ))}
+          </Select>
+        )}
+      </div>
 
       {cargando ? (
         <div className="flex justify-center my-20">
@@ -337,26 +372,24 @@ const citaOcupante = citas.find((c: any) => {
             color="error"
             variant="contained"
             disabled={loadingEliminar}
-onClick={async () => {
-  if (!citaSeleccionada) return;
-  setLoadingEliminar(true);
-  try {
-    const token = localStorage.getItem('token');
-    console.log('Eliminar cita ID:', citaSeleccionada.id, 'Token:', token);
-    await axios.delete(`http://localhost:5000/api/citas/${citaSeleccionada.id}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
-    alert('Cita eliminada correctamente');
-    setDialogoCitaAbierto(false);
-    cargarEventos(dentistaSeleccionado);
-  } catch (error) {
-    console.error(error);
-    alert('Error al eliminar cita');
-  } finally {
-    setLoadingEliminar(false);
-  }
-}}
-
+            onClick={async () => {
+              if (!citaSeleccionada) return;
+              setLoadingEliminar(true);
+              try {
+                const token = localStorage.getItem('token');
+                await axios.delete(`http://localhost:5000/api/citas/${citaSeleccionada.id}`, {
+                  headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                });
+                alert('Cita eliminada correctamente');
+                setDialogoCitaAbierto(false);
+                cargarEventos(dentistaSeleccionado);
+              } catch (error) {
+                console.error(error);
+                alert('Error al eliminar cita');
+              } finally {
+                setLoadingEliminar(false);
+              }
+            }}
           >
             Eliminar cita
           </Button>

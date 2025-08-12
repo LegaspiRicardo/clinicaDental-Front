@@ -1,41 +1,72 @@
 // src/components/CalendarHorario.tsx
+import React, { useEffect, useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import { useEffect, useState } from 'react';
-import { Box, Select, MenuItem, Typography, Dialog } from '@mui/material';
+import { Box, Select, MenuItem, Typography, Dialog, CircularProgress } from '@mui/material';
 import axios from 'axios';
+import { jwtDecode } from 'jwt-decode';
+import FormularioHorario from './forms/FormularioHorario';
+
+
+type TokenPayload = {
+    id: string;
+    email: string;
+    rol: string;
+};
 
 const CalendarHorario = () => {
-    const [dentistas, setDentistas] = useState([]);
-    const [dentistaSeleccionado, setDentistaSeleccionado] = useState('');
-    const [horarios, setHorarios] = useState([]);
+    const [decoded, setDecoded] = useState<TokenPayload | null>(null);
+    const [dentistaSeleccionado, setDentistaSeleccionado] = useState<string>('');
+    const [dentistas, setDentistas] = useState<any[]>([]);
+    const [horarios, setHorarios] = useState<any[]>([]);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [fechaSeleccionada, setFechaSeleccionada] = useState('');
 
-    // ✅ Cargar dentistas activos al inicio
+    // Cargar y decodificar token una sola vez al montar
     useEffect(() => {
-        const fetchDentistas = async () => {
+        const token = localStorage.getItem('token');
+        if (token) {
             try {
-                const res = await axios.get('/api/users?rol=dentista&status=activo');
-                setDentistas(res.data);
-            } catch (err) {
-                console.error('Error al obtener dentistas', err);
+                const decodedToken = jwtDecode<TokenPayload>(token);
+                setDecoded(decodedToken);
+                if (decodedToken.rol.toLowerCase() === 'dentista') {
+                    setDentistaSeleccionado(decodedToken.id);
+                }
+            } catch (error) {
+                console.error('Error al decodificar token:', error);
+                setDecoded(null);
             }
-        };
-        fetchDentistas();
+        } else {
+            setDecoded(null);
+        }
     }, []);
 
-    // ✅ Obtener horarios del dentista seleccionado
+    // Cargar dentistas solo si NO es dentista
+    useEffect(() => {
+        if (decoded && decoded.rol.toLowerCase() !== 'dentista') {
+            const fetchDentistas = async () => {
+                try {
+                    const res = await axios.get('/api/users?rol=dentista&status=activo');
+                    setDentistas(res.data);
+                } catch (err) {
+                    console.error('Error al obtener dentistas', err);
+                }
+            };
+            fetchDentistas();
+        }
+    }, [decoded]);
+
+    // Cargar horarios cuando cambie dentistaSeleccionado
     useEffect(() => {
         const fetchHorarios = async () => {
             if (!dentistaSeleccionado) return;
             try {
                 const res = await axios.get(`/api/horarios/dentista/${dentistaSeleccionado}`);
-                const eventos = res.data.map((h) => ({
+                const eventos = res.data.map((h: any) => ({
                     id: h.id,
-                    title: `Horario`,
+                    title: 'Horario',
                     start: `${h.fecha}T${h.inicio}`,
                     end: `${h.fecha}T${h.fin}`,
                 }));
@@ -47,8 +78,18 @@ const CalendarHorario = () => {
         fetchHorarios();
     }, [dentistaSeleccionado]);
 
-    // ✅ Abrir modal al dar clic en una fecha del calendario
-    const handleDateClick = (info) => {
+    // Esperar a tener el token decodificado para renderizar
+    if (decoded === null) {
+        return (
+            <Box className="p-4 text-center">
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    const isDentista = decoded.rol.toLowerCase() === 'dentista';
+
+    const handleDateClick = (info: any) => {
         if (dentistaSeleccionado) {
             setFechaSeleccionada(info.dateStr);
             setDialogOpen(true);
@@ -61,20 +102,23 @@ const CalendarHorario = () => {
                 Horarios de Dentistas
             </Typography>
 
-            <Select
-                fullWidth
-                value={dentistaSeleccionado}
-                onChange={(e) => setDentistaSeleccionado(e.target.value)}
-                displayEmpty
-                sx={{ mb: 2 }}
-            >
-                <MenuItem value="">Selecciona un dentista</MenuItem>
-                {dentistas.map((d) => (
-                    <MenuItem key={d.id} value={d.id}>
-                        {d.nombre}
-                    </MenuItem>
-                ))}
-            </Select>
+            {/* Mostrar select solo si NO es dentista */}
+            {!isDentista && (
+                <Select
+                    fullWidth
+                    value={dentistaSeleccionado}
+                    onChange={(e) => setDentistaSeleccionado(e.target.value)}
+                    displayEmpty
+                    sx={{ mb: 2 }}
+                >
+                    <MenuItem value="">Selecciona un dentista</MenuItem>
+                    {dentistas.map((d: any) => (
+                        <MenuItem key={d.id} value={d.id}>
+                            {d.username || d.nombre}
+                        </MenuItem>
+                    ))}
+                </Select>
+            )}
 
             <FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
@@ -88,14 +132,13 @@ const CalendarHorario = () => {
 
             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
                 <FormularioHorario
+                    open={dialogOpen}
+                    onClose={() => setDialogOpen(false)}
                     fecha={fechaSeleccionada}
                     dentistaId={dentistaSeleccionado}
-                    onClose={() => {
-                        setDialogOpen(false);
-                        // ✅ Recargar horarios después de agregar uno nuevo
-                        setTimeout(() => {
-                            setDentistaSeleccionado((prev) => prev); // Trigger useEffect
-                        }, 300);
+                    onHorarioGuardado={() => {
+                        // Recarga horarios después de guardar uno nuevo
+                        setDentistaSeleccionado((prev) => prev);
                     }}
                 />
             </Dialog>

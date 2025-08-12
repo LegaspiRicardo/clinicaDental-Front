@@ -11,11 +11,16 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentEvents, sidebarOpen, toggleSidebar }) => {
- const navigate = useNavigate();
-    const handleLogout = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('rol'); // quitar también el rol
     navigate('/login');
   };
+
+  const rol = localStorage.getItem('rol'); // obtener rol del usuario
+
   return (
     <>
       {/* Botón hamburguesa: solo visible en pantallas < md */}
@@ -40,7 +45,23 @@ const Sidebar: React.FC<SidebarProps> = ({ currentEvents, sidebarOpen, toggleSid
           <h2 className="text-2xl font-bold text-gray-800 mb-12 mt-5">
             <a href="/" className="hover:text-blue-600">DENTAL - ART</a>
           </h2>
+
           <ul className="space-y-2 ml-3">
+            {/* Opciones solo visibles para roles que no sean dentista */}
+            {rol == 'Dentista' && (
+              <>
+                <li>
+                  <a href="/horarios" className="block text-gray-700 text-xl my-8 hover:text-blue-500">Horarios</a>
+                </li>
+                <li>
+                  <a href="/" className="block text-gray-700 text-xl my-8 hover:text-blue-500">Citas</a>
+                </li> 
+              </>
+            )}
+
+            {/* Opciones visibles para admin */}
+                        {rol == 'Admin' && (
+              <>
             <li>
               <a href="/dentistas" className="block text-gray-700 text-xl my-8 hover:text-blue-500">Dentistas</a>
             </li>
@@ -59,33 +80,25 @@ const Sidebar: React.FC<SidebarProps> = ({ currentEvents, sidebarOpen, toggleSid
             <li>
               <a href="/miperfil" className="block text-gray-700 text-xl mt-48 hover:text-blue-500">Mi perfil</a>
             </li>
+            </>
+            )}
 
+            {/* Botón de cerrar sesión */}
             <div className="mt-8">
-        <Button
-          variant="outlined"
-          color="error"
-          fullWidth
-          onClick={handleLogout}
-        >
-          Cerrar sesión
-        </Button>
-      </div>
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                onClick={handleLogout}
+              >
+                Cerrar sesión
+              </Button>
+            </div>
           </ul>
         </div>
 
         {/* Próximas citas */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">
-            Próximas citas ({currentEvents.length})
-          </h2>
-          <ul className="space-y-1 text-sm text-gray-700">
-            {currentEvents.map((event) => (
-              <li key={event.id}>
-                <b>{event.start?.toLocaleDateString()}</b> <i>{event.title}</i>
-              </li>
-            ))}
-          </ul>
-        </div>
+
       </div>
     </>
   );

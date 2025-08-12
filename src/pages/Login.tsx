@@ -1,108 +1,119 @@
-import React, {useState} from "react";
-import { TextField, Button, Container, Box, Typography, Link } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+// src/pages/Login.tsx
+import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
+const Login: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-const Login:React.FC = () =>{
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-const Nnavigate = useNavigate();
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
+        email,
+        password,
+      });
 
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
+      console.log("Respuesta login:", response.data);
+      const { token, user } = response.data;
 
+      if (!token) throw new Error("No se recibió token del servidor");
+      if (!user?.rol) throw new Error("No se recibió rol del usuario");
 
+      // Guardar datos en localStorage
+      localStorage.setItem("token", token);
+      localStorage.setItem("rol", user.rol);
+      localStorage.setItem("username", user.username);
 
-    const handleSubmit = async (event: React.FormEvent) =>{
-    event.preventDefault();
-
-
-    try{
-        //enviar las credenciales al backend
-        const response = await axios.post('http://localhost:5000/api/auth/login', 
-            {
-            email, password,
-            }
-        );
-
-        console.log('token recibido: ', response.data.token);
-        localStorage.setItem('token', `${response.data.token}` ); //Guarar el token
-        setErrorMessage('');
-        Nnavigate('/'); //Redireccionar al dashboard despues de iniciar sesion
-  
-    } catch(error:any){
-        //manejo de errores
-        console.error("Error al iniciar sesion: ", error);
-        setErrorMessage(error.response?.data?.message || "Error al iniciar sesion. Por favor, intentalo de nuevo");
+      // Redirigir según rol
+      if (user.rol.toLowerCase() === "dentista") {
+        navigate("/horarios");
+      } else if (user.rol.toLowerCase() === "paciente") {
+        navigate("/servicios");
+      } else {
+        navigate("/"); // Ruta por defecto para otros roles
+      }
+    } catch (err: any) {
+      console.error("Error al iniciar sesión:", err);
+      setError(
+        err.response?.data?.message || err.message || "Error al iniciar sesión"
+      );
+    } finally {
+      setLoading(false);
     }
+  };
 
-};
+  return (
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      noValidate
+      sx={{
+        width: "90%",
+        maxWidth: 420,
+        mx: "auto",
+        mt: 8,
+        p: 3,
+        backgroundColor: "white",
+        borderRadius: 2,
+        boxShadow: 3,
+      }}
+    >
+      <Typography variant="h5" textAlign="center" mb={2}>
+        Iniciar Sesión
+      </Typography>
 
- return(
-    <Container maxWidth="sm">  
-        <Box sx={{mt:8, textAlign:"center"}}>
-            <Typography variant="h4" gutterBottom>
-                Iniciar Sesión
-            </Typography>
-            
-            <Box component= "form" noValidate sx={{mt:2}} onSubmit={handleSubmit}>
-                <TextField
-                    fullWidth
-                    label="Correo electronico"
-                    margin="normal"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
+      <TextField
+        margin="normal"
+        required
+        fullWidth
+        label="Correo electrónico"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
 
+      <TextField
+        margin="normal"
+        required
+        fullWidth
+        label="Contraseña"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
+      {error && (
+        <Typography color="error" variant="body2" mt={1}>
+          {error}
+        </Typography>
+      )}
 
-                <TextField
-                    fullWidth
-                    label="Contraseña"
-                    margin="normal"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-
-                {
-                    errorMessage && (
-                        <Typography color="error" variant="body2" sx={{mt:1}}>
-                            {errorMessage}
-                        </Typography>
-                    )
-                }
-
-                <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                sx={{mt:3}}
-                type="submit"
-                >Ingresar</Button>
-
-            </Box>
-
-            <Box sx={{mt:2}}>
-                <Typography variant="body2">
-                    ¿No tienes una cuenta? {' '}
-                    <Link component="button" variant="body2" onClick={()=> Nnavigate('/register')} >
-                        Registrate aqui
-                    </Link>
-                </Typography>
-            </Box>
-        </Box>
-
-    </Container>
-
-
-
- )
-
+      <Button
+        type="submit"
+        fullWidth
+        variant="contained"
+        sx={{ mt: 2 }}
+        disabled={loading}
+      >
+        {loading ? <CircularProgress size={22} /> : "Ingresar"}
+      </Button>
+    </Box>
+  );
 };
 
 export default Login;
