@@ -13,7 +13,7 @@ const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className=" flex h-screen bg-cyan-800">
+    <div className=" flex h-screen bg-cyan-700">
       <Sidebar
         currentEvents={currentEvents}
         sidebarOpen={sidebarOpen}

@@ -38,10 +38,10 @@ const Servicios = () => {
     }, []);
 
     return (
-        <div className="demo-app container mx-auto p-8 bg-cyan-800 ">
-            <h2 className="text-white text-4xl">Servicios</h2>
+        <div className="demo-app container mx-auto p-8 h-full ">
+            <h2 className="text-white text-4xl">Servicios dentales</h2>
 
-            <div className="flex space-x-4 my-8">
+            <div className="flex mt-8">
                 <button
                     onClick={() => {
                         setMostrarCrear(!mostrarCrear);
@@ -54,15 +54,17 @@ const Servicios = () => {
                 </button>
             </div>
 
-            {mostrarCrear && (
-                <Create_servicio
-                    onSuccess={() => {
-                        setMostrarCrear(false);
-                        cargarServicios();
-                    }}
-                    onClose={() => setMostrarCrear(false)}
-                />
-            )}
+{mostrarCrear && (
+    <Create_servicio
+        open={mostrarCrear}
+        onSuccess={() => {
+            setMostrarCrear(false);
+            cargarServicios();
+        }}
+        onClose={() => setMostrarCrear(false)}
+    />
+)}
+
 
             {mostrarActualizar && servicioSeleccionado && (
                 <Update_servicio
@@ -86,7 +88,7 @@ const Servicios = () => {
 
 
             {/* Seccion carrusel servicios */}
-            <div className="h-96 mt-24 rounded-lg">
+            <div className="h-96 mt-16 rounded-lg">
                 <ServiciosCarousel
                     servicios={servicios}
                     onEditar={(servicio) => {

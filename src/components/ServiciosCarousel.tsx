@@ -1,5 +1,6 @@
-// src/components/ServiciosCarousel.tsx
-import React from 'react';
+import React, { useState } from 'react';
+import { Dialog } from '@mui/material';
+import Update_servicio from './forms/update_servicio';
 
 interface Servicio {
     id: number;
@@ -15,9 +16,11 @@ interface Props {
     onEliminar: (servicio: Servicio) => void;
 }
 
-
 const ServiciosCarousel: React.FC<Props> = ({ servicios, onEditar, onEliminar }) => {
-    const [currentIndex, setCurrentIndex] = React.useState(0);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [openModal, setOpenModal] = useState(false);
+    const [servicioSeleccionado, setServicioSeleccionado] = useState<Servicio | null>(null);
+
     const visibleCards = 3;
 
     const prevSlide = () => {
@@ -30,12 +33,23 @@ const ServiciosCarousel: React.FC<Props> = ({ servicios, onEditar, onEliminar })
         );
     };
 
+    const handleEditarClick = (servicio: Servicio) => {
+        setServicioSeleccionado(servicio);
+        setOpenModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setOpenModal(false);
+        setServicioSeleccionado(null);
+    };
+
     return (
         <div className="mx-auto px-4">
-            <div className="relative">
+            <div className="relative  pb-16">
+                {/* Botón Anterior */}
                 <button
                     onClick={prevSlide}
-                    className="absolute left-2 top-80 -translate-y-1/2 bg-cyan-700 hover:bg-cyan-600 text-white px-8 py-1 rounded shadow z-10"
+                    className="absolute bottom-0 -translate-y-1/2 bg-cyan-800/50 hover:bg-cyan-900 text-white px-8 py-1 rounded shadow z-10 text-2xl"
                     disabled={currentIndex === 0}
                 >
                     ⬅
@@ -43,57 +57,68 @@ const ServiciosCarousel: React.FC<Props> = ({ servicios, onEditar, onEliminar })
 
                 <div className="overflow-hidden">
                     <div
-                        className="flex transition-transform duration-500"
+                        className="flex transition-transform duration-500 "
                         style={{ transform: `translateX(-${currentIndex * (100 / visibleCards)}%)` }}
                     >
                         {servicios.map((card) => (
                             <div
                                 key={card.id}
-                                className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 px-2"
+                                className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 px-5  "
                             >
-                                <div className="bg-white rounded-lg p-4 shadow-md h-full flex flex-col justify-between">
-                                    <div>
-                                        <h3 className="text-2xl font-semibold mb-2">{card.name}</h3>
-                                        <p className="text-gray-600 text-justify">
-                                            Descripción: <b>{card.description}</b>
-                                        </p>
-                                        <p className="text-gray-600 mt-8 text-center">
-                                            Precio: <span className="text-lg"><b>${card.precio}</b></span>
-                                        </p>
-                                        <p className="text-gray-600 mt-6 text-center">
-                                            Duración estimada: <b>{card.duracion_estimada / 60}</b> horas
-                                        </p>
-                                    </div>
 
-                                    {/* Botones de acción */}
-                                    <div className="flex justify-center gap-4 mt-6">
-                                        <button
-                                            onClick={() => onEditar(card)}
-                                            className="bg-yellow-400 text-black px-4 py-1 rounded hover:bg-yellow-500 text-sm"
-                                        >
-                                            Editar
-                                        </button>
-                                        <button
-                                            onClick={() => onEliminar(card)}
-                                            className="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 text-sm"
-                                        >
-                                            Eliminar
-                                        </button>
-                                    </div>
-                                </div>
+                                <article className="relative overflow-hidden rounded-lg shadow-sm transition hover:shadow-lg  ">
+                                    <img
+                                        alt=""
+                                        src="https://images.unsplash.com/photo-1590424693420-634a0b0b782c?q=80&w=1173&auto=format&fit=crop&ixlib=rb-4.1.0"
+                                        className="absolute inset-0 h-full w-full object-cover"
+                                    />
+                                    <button onClick={() => handleEditarClick(card)} className='text-justify'>
+                                        <div className="relative bg-gradient-to-t from-gray-900 to-white/5 pt-32 sm:pt-48 lg:pt-64 ">
+
+                                            <div className="p-4 sm:p-6">
+
+                                                <h3 className="mt-0.5 text-4xl text-white">{card.name}</h3>
+
+                                                <p className="mt-2 line-clamp-3 text-sm/relaxed text-white/75">
+                                                    {card.description || "Sin descripción"}
+                                                </p>
+                                                <div className='flex flex-row mt-6 text-lg'>
+                                                    <p className="text-white/75 basis-1/2 ">
+                                                        Duración: <b className='text-white'>{card.duracion_estimada / 60}</b> horas
+                                                    </p>
+                                                    <p className=" text-white/90">
+                                                        Precio $<b>{card.precio} </b>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </button>
+                                </article>
                             </div>
                         ))}
                     </div>
                 </div>
 
+                {/* Botón Siguiente */}
                 <button
                     onClick={nextSlide}
-                    className="absolute right-2 top-80 -translate-y-1/2 bg-cyan-700 hover:bg-cyan-600 text-white px-8 py-1 rounded shadow z-10"
+                    className="absolute right-0 bottom-0 -translate-y-1/2 bg-cyan-700 hover:bg-cyan-900 text-white px-8 py-1 rounded shadow z-10 text-2xl"
                     disabled={currentIndex >= servicios.length - visibleCards}
                 >
                     ➡
                 </button>
             </div>
+
+            {/* Modal de edición */}
+            <Dialog open={openModal} onClose={handleCloseModal} maxWidth="sm" fullWidth>
+                {servicioSeleccionado && (
+                    <Update_servicio
+                        servicio={servicioSeleccionado}
+                        onClose={handleCloseModal}
+                    />
+                )}
+            </Dialog>
         </div>
     );
 };

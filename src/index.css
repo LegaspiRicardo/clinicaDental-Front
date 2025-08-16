@@ -34,3 +34,7 @@ body > div { /* the react root */
   background-color: white !important;
   color: black !important;
 }
+/* Forzar que todos los modales de MUI tengan backdrop negro translúcido */
+.MuiBackdrop-root {
+  background-color: rgba(30, 44, 71, 0.836) !important;
+}

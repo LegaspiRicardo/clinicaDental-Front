@@ -5,7 +5,6 @@ import { Box, TextField, Button, Typography, Select, MenuItem, InputLabel, FormC
 import type { SelectChangeEvent } from '@mui/material/Select';
 import axios from 'axios';
 import { checkConnection } from '../../utils/connectionStatus';
-import { saveServicio } from '../../utils/localServiciosDB'; // ← si implementas almacenamiento offline
 
 interface Servicio {
     id: number;
@@ -71,14 +70,29 @@ const Update_servicio: React.FC<Props> = ({ servicio, onClose }) => {
                 maxWidth: 600,
                 margin: '0 auto',
                 backgroundColor: 'white',
-                padding: 4,
+                paddingBottom: 4,
                 borderRadius: 2,
                 mt: 4,
             }}
         >
-            <Typography variant="h5" mb={3}>
-                Editar Servicio
-            </Typography>
+            <div className='flex mb-4'>
+                <div className='w-1/2'>
+                    <Typography variant="h5" >
+                        Editar Servicio
+                    </Typography>
+                </div>
+
+                <div className='w-1/2 text-right'>
+
+                    {onClose && (
+                        <a className='border rounded border-solid hover:cursor-pointer hover:bg-gray-200 px-4 pb-2 text-xl ' onClick={onClose}>
+                            x
+                        </a>
+                    )}
+
+                </div>
+            </div>
+
 
             <TextField
                 label="Nombre"
@@ -132,14 +146,10 @@ const Update_servicio: React.FC<Props> = ({ servicio, onClose }) => {
 
 
             <Box textAlign="center" mt={4}>
-                <Button variant="contained" color="warning" onClick={handleUpdate}>
+                <Button variant="contained" color="primary" onClick={handleUpdate}>
                     Guardar Cambios
                 </Button>
-                {onClose && (
-                    <Button variant="text" sx={{ ml: 2 }} onClick={onClose}>
-                        Cancelar
-                    </Button>
-                )}
+
             </Box>
         </Box>
     );
